@@ -43,7 +43,7 @@ function App() {
 
     if (!socketRef.current || socketRef.current.readyState === WebSocket.CLOSED) {
       console.log("Creating new WebSocket connection...");
-      const ws = new WebSocket('ws://34.219.101.222:8000/ws');
+      const ws = new WebSocket('ws://localhost:8000/ws');
       
       ws.onopen = () => {
         console.log("WebSocket connection opened successfully");
