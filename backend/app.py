@@ -14,6 +14,14 @@ import time
 load_dotenv()
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Vite default port
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Initialize OpenAI API client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 openai.api_key = os.getenv("OPENAI_API_KEY")
