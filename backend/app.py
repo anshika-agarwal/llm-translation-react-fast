@@ -17,7 +17,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite default port
+    allow_origins=[
+        "http://34.219.101.222:5173",  # Your EC2 frontend
+        "https://34.219.101.222:5173",  # In case you're using HTTPS
+        "http://localhost:5173"         # For local development
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
