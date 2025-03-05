@@ -39,14 +39,7 @@ DB_CONFIG = {
 }
 
 def get_db_connection():
-    return psycopg2.connect(
-        host="172.31.64.54",
-        database="postgres",
-        user="anshikaagarwal",
-        password="llmdbpasswordnew$!",
-        port="5432"
-    )
-    #return psycopg2.connect(**DB_CONFIG)
+    return psycopg2.connect(**DB_CONFIG)
 
 # A simple GET endpoint; React frontend is served separately
 @app.get("/")
@@ -374,4 +367,4 @@ def remove_user_from_active(user):
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5173)
