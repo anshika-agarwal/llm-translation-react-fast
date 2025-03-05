@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import openai
 from openai import OpenAI
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware  # Add this import
 from fastapi.responses import JSONResponse
 import asyncio
 import json
