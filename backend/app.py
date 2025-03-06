@@ -48,6 +48,7 @@ active_users = {}  # {user1: user2, user2: user1}
 user_languages = {}  # Language preferences
 conversation_mapping = {}  # Maps users to conversation_id
 user_presurveys = {}
+chat_timers = {}  # {conversation_id: asyncio.Task}
 websocket_to_uuid = {}  # Maps WebSocket to UUID
 
 # Global variable to track sequential conversation IDs
@@ -117,7 +118,7 @@ async def safe_receive(websocket: WebSocket):
     try:
         return await websocket.receive_text()
     except WebSocketDisconnect:
-        print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} disconnected.")
+        print(f"[INFO] WebSocket {id(websocket)} disconnected.")
         return None
     except Exception as e:
         print(f"[ERROR] Error while receiving message: {e}")
@@ -148,48 +149,47 @@ async def pair_users():
         await user2.send_text(json.dumps({"type": "paired", "conversation_id": conversation_id}))
 
         # Start chat session
-        await asyncio.create_task(start_chat(user1, user2, conversation_id))
+        await start_chat(user1, user2, conversation_id)
 
 async def start_chat(user1, user2, conversation_id):
     """Handles message relay between two connected users."""
     try:
         while True:
-            message = await safe_receive(user1)
-            if message:
-                print(f"[INFO] User1 sent message: {message}")
-                await user2.send_text(json.dumps({"type": "message", "text": message}))
-            else:
-                print(f"[INFO] User1 disconnected from conversation {conversation_id}")
-                break
+            # Wait for either user to send a message
+            user1_task = asyncio.create_task(safe_receive(user1))
+            user2_task = asyncio.create_task(safe_receive(user2))
 
-            message = await safe_receive(user2)
-            if message:
-                print(f"[INFO] User2 sent message: {message}")
-                await user1.send_text(json.dumps({"type": "message", "text": message}))
-            else:
-                print(f"[INFO] User2 disconnected from conversation {conversation_id}")
-                break
+            done, pending = await asyncio.wait(
+                [user1_task, user2_task], return_when=asyncio.FIRST_COMPLETED
+            )
 
-    except WebSocketDisconnect:
-        print(f"[INFO] WebSocket disconnected for conversation {conversation_id}")
-        remove_user_from_active(user1)
-        remove_user_from_active(user2)
+            for task in done:
+                message = task.result()
+                if message is None:
+                    continue  # Ignore empty messages
+
+                message_data = json.loads(message)
+
+                if message_data["type"] == "message":
+                    sender = user1 if task == user1_task else user2
+                    receiver = user2 if sender == user1 else user1
+
+                    print(f"[INFO] Forwarding message from {websocket_to_uuid[sender]} to {websocket_to_uuid[receiver]}: {message_data['text']}")
+
+                    # Send the message to the recipient
+                    await receiver.send_text(json.dumps({"type": "message", "text": message_data["text"]}))
+
     except Exception as e:
         print(f"[ERROR] Exception in start_chat: {e}")
-    finally:
-        print(f"[INFO] Cleaning up conversation {conversation_id}")
-        remove_user_from_active(user1)
-        remove_user_from_active(user2)
 
 def remove_user_from_active(user):
     """Removes a user from active users and cleans up connections."""
     global active_users, waiting_room
-
     if user in active_users:
         partner = active_users.pop(user, None)
         if partner:
             active_users.pop(partner, None)
-            print(f"[INFO] Removed User {websocket_to_uuid.get(user, 'unknown')} and their partner from active_users.")
+            print(f"[INFO] Removed User {websocket_to_uuid.get(user, 'unknown')} from active_users.")
 
     waiting_room[:] = [(w, ts) for w, ts in waiting_room if w != user]
 
