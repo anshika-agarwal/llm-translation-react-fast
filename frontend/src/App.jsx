@@ -12,9 +12,9 @@ function App() {
 
   // States for language selection and presurvey
   const [language, setLanguage] = useState("");
-  const [question1, setQuestion1] = useState("");
-  const [question2, setQuestion2] = useState("");
-  const [question3, setQuestion3] = useState("");
+  const [qualityRating, setqualityRating] = useState("");
+  const [seamlessRating, setseamlessRating] = useState("");
+  const [translationeseRating, settranslationeseRating] = useState("");
 
   // Chat input
   const [chatMessage, setChatMessage] = useState("");
@@ -33,7 +33,7 @@ function App() {
 
   // Function to initiate a chat (creates a WebSocket connection)
   const findPair = () => {
-    if (!language || !question1 || !question2 || !question3) {
+    if (!language || !qualityRating || !seamlessRating || !translationeseRating) {
       alert("Please fill in all fields before finding a chat partner");
       return;
     }
@@ -50,9 +50,9 @@ function App() {
         const data = {
           type: "language",
           language: language,
-          question1: question1,
-          question2: question2,
-          question3: question3,
+          qualityRating: qualityRating,
+          seamlessRating: seamlessRating,
+          translationeseRating: translationeseRating,
         };
         console.log("Sending initial data:", data);
         ws.send(JSON.stringify(data));
