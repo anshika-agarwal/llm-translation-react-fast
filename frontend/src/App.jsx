@@ -12,9 +12,9 @@ function App() {
 
   // States for language selection and presurvey
   const [language, setLanguage] = useState("");
-  const [qualityRating, setqualityRating] = useState("");
-  const [seamlessRating, setseamlessRating] = useState("");
-  const [translationeseRating, settranslationeseRating] = useState("");
+  const [qualityRating, setQualityRating] = useState("");
+  const [seamlessRating, setSeamlessRating] = useState("");
+  const [translationeseRating, setTranslationeseRating] = useState("");  
 
   // Chat input
   const [chatMessage, setChatMessage] = useState("");
