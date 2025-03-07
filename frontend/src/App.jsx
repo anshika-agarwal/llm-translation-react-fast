@@ -359,8 +359,8 @@ function App() {
             
             {/* Engagement Rating */}
             <div className="survey-question">
-              <h3>1. How would you rate your conversation on engagement, where 1 is very unengaging and 5 is super engaging?</h3>
-              <div className="radio-options">
+              <h3>1. How would you rate your conversation on engagement?</h3>
+              <div className="radio-group">
                 {[
                   { value: "1", label: "Very unengaging" },
                   { value: "2", label: "Somewhat unengaging" },
@@ -368,24 +368,28 @@ function App() {
                   { value: "4", label: "Engaging" },
                   { value: "5", label: "Very engaging" }
                 ].map((option) => (
-                  <label key={option.value} className="radio-label">
+                  <div key={option.value} className="radio-option">
                     <input
                       type="radio"
+                      id={`engagement-${option.value}`}
                       name="engagementRating"
                       value={option.value}
                       checked={engagementRating === option.value}
                       onChange={(e) => setEngagementRating(e.target.value)}
                     />
-                    <span>{option.value} ({option.label})</span>
-                  </label>
+                    <label className="radio-option-label" htmlFor={`engagement-${option.value}`}>
+                      <span className="radio-value">{option.value}</span>
+                      <span className="radio-description">{option.label}</span>
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>
 
             {/* Friendliness Rating */}
             <div className="survey-question">
-              <h3>2. How would you rate your conversation on friendliness, where 1 is very unfriendly and 5 is super friendly?</h3>
-              <div className="radio-options">
+              <h3>2. How would you rate your conversation on friendliness?</h3>
+              <div className="radio-group">
                 {[
                   { value: "1", label: "Very unfriendly" },
                   { value: "2", label: "Somewhat unfriendly" },
@@ -393,24 +397,28 @@ function App() {
                   { value: "4", label: "Friendly" },
                   { value: "5", label: "Very friendly" }
                 ].map((option) => (
-                  <label key={option.value} className="radio-label">
+                  <div key={option.value} className="radio-option">
                     <input
                       type="radio"
+                      id={`friendliness-${option.value}`}
                       name="friendlinessRating"
                       value={option.value}
                       checked={friendlinessRating === option.value}
                       onChange={(e) => setFriendlinessRating(e.target.value)}
                     />
-                    <span>{option.value} ({option.label})</span>
-                  </label>
+                    <label className="radio-option-label" htmlFor={`friendliness-${option.value}`}>
+                      <span className="radio-value">{option.value}</span>
+                      <span className="radio-description">{option.label}</span>
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>
 
             {/* Overall Quality Rating */}
             <div className="survey-question">
-              <h3>3. How would you rate the conversation quality overall, where 1 is very bad and 5 is very good?</h3>
-              <div className="radio-options">
+              <h3>3. How would you rate the conversation quality overall?</h3>
+              <div className="radio-group">
                 {[
                   { value: "1", label: "Very bad" },
                   { value: "2", label: "Bad" },
@@ -418,16 +426,20 @@ function App() {
                   { value: "4", label: "Good" },
                   { value: "5", label: "Very good" }
                 ].map((option) => (
-                  <label key={option.value} className="radio-label">
+                  <div key={option.value} className="radio-option">
                     <input
                       type="radio"
+                      id={`quality-${option.value}`}
                       name="overallRating"
                       value={option.value}
                       checked={overallRating === option.value}
                       onChange={(e) => setOverallRating(e.target.value)}
                     />
-                    <span>{option.value} ({option.label})</span>
-                  </label>
+                    <label className="radio-option-label" htmlFor={`quality-${option.value}`}>
+                      <span className="radio-value">{option.value}</span>
+                      <span className="radio-description">{option.label}</span>
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>
@@ -435,60 +447,64 @@ function App() {
             {/* Continue Conversation */}
             <div className="survey-question">
               <h3>4. Do you want to continue conversing with this individual?</h3>
-              <div className="radio-options">
-                <label className="radio-label">
+              <div className="binary-radio-group">
+                <div className="binary-radio-option">
                   <input
                     type="radio"
+                    id="continue-yes"
                     name="continueChat"
                     value="yes"
                     checked={continueChat === "yes"}
                     onChange={(e) => setContinueChat(e.target.value)}
                   />
-                  <span>Yes</span>
-                </label>
-                <label className="radio-label">
+                  <label className="binary-radio-label" htmlFor="continue-yes">Yes</label>
+                </div>
+                <div className="binary-radio-option">
                   <input
                     type="radio"
+                    id="continue-no"
                     name="continueChat"
                     value="no"
                     checked={continueChat === "no"}
                     onChange={(e) => setContinueChat(e.target.value)}
                   />
-                  <span>No</span>
-                </label>
+                  <label className="binary-radio-label" htmlFor="continue-no">No</label>
+                </div>
               </div>
             </div>
 
-            {/* Real Person or AI */}
+            {/* Chat Partner Type */}
             <div className="survey-question">
               <h3>5. Do you think you were chatting with a real person or AI bot?</h3>
-              <div className="radio-options">
-                <label className="radio-label">
+              <div className="binary-radio-group">
+                <div className="binary-radio-option">
                   <input
                     type="radio"
+                    id="partner-real"
                     name="chatPartnerType"
                     value="real"
                     checked={chatPartnerType === "real"}
                     onChange={(e) => setChatPartnerType(e.target.value)}
                   />
-                  <span>Real person</span>
-                </label>
-                <label className="radio-label">
+                  <label className="binary-radio-label" htmlFor="partner-real">Real person</label>
+                </div>
+                <div className="binary-radio-option">
                   <input
                     type="radio"
+                    id="partner-ai"
                     name="chatPartnerType"
                     value="ai"
                     checked={chatPartnerType === "ai"}
                     onChange={(e) => setChatPartnerType(e.target.value)}
                   />
-                  <span>AI bot</span>
-                </label>
+                  <label className="binary-radio-label" htmlFor="partner-ai">AI bot</label>
+                </div>
               </div>
             </div>
 
             {/* Reasoning */}
             <div className="survey-question">
-              <h3>6. Why did you believe your chat was a [real person or AI]?</h3>
+              <h3>6. Why did you believe your chat was a {chatPartnerType === "real" ? "real person" : "AI bot"}?</h3>
               <textarea
                 value={chatReasoningText}
                 onChange={(e) => setChatReasoningText(e.target.value)}
@@ -497,46 +513,47 @@ function App() {
               />
             </div>
 
-            {/* Native Speaker Question */}
+            {/* Native Speaker Questions - Only show if chatPartnerType is "real" */}
             {chatPartnerType === "real" && (
-              <div className="survey-question">
-                <h3>7. Do you think you were chatting with a native speaker of the language you chose?</h3>
-                <div className="radio-options">
-                  <label className="radio-label">
-                    <input
-                      type="radio"
-                      name="isNativeSpeaker"
-                      value="yes"
-                      checked={isNativeSpeaker === "yes"}
-                      onChange={(e) => setIsNativeSpeaker(e.target.value)}
-                    />
-                    <span>Yes</span>
-                  </label>
-                  <label className="radio-label">
-                    <input
-                      type="radio"
-                      name="isNativeSpeaker"
-                      value="no"
-                      checked={isNativeSpeaker === "no"}
-                      onChange={(e) => setIsNativeSpeaker(e.target.value)}
-                    />
-                    <span>No</span>
-                  </label>
+              <>
+                <div className="survey-question">
+                  <h3>7. Do you think you were chatting with a native speaker of the language you chose?</h3>
+                  <div className="binary-radio-group">
+                    <div className="binary-radio-option">
+                      <input
+                        type="radio"
+                        id="native-yes"
+                        name="isNativeSpeaker"
+                        value="yes"
+                        checked={isNativeSpeaker === "yes"}
+                        onChange={(e) => setIsNativeSpeaker(e.target.value)}
+                      />
+                      <label className="binary-radio-label" htmlFor="native-yes">Yes</label>
+                    </div>
+                    <div className="binary-radio-option">
+                      <input
+                        type="radio"
+                        id="native-no"
+                        name="isNativeSpeaker"
+                        value="no"
+                        checked={isNativeSpeaker === "no"}
+                        onChange={(e) => setIsNativeSpeaker(e.target.value)}
+                      />
+                      <label className="binary-radio-label" htmlFor="native-no">No</label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* Native Speaker Reasoning */}
-            {chatPartnerType === "real" && (
-              <div className="survey-question">
-                <h3>8. Why did you believe your chat was a [native speaker or non-native speaker]?</h3>
-                <textarea
-                  value={nativeSpeakerReason}
-                  onChange={(e) => setNativeSpeakerReason(e.target.value)}
-                  placeholder="Please explain your reasoning..."
-                  rows="4"
-                />
-              </div>
+                <div className="survey-question">
+                  <h3>8. Why did you believe your chat was a {isNativeSpeaker === "yes" ? "native" : "non-native"} speaker?</h3>
+                  <textarea
+                    value={nativeSpeakerReason}
+                    onChange={(e) => setNativeSpeakerReason(e.target.value)}
+                    placeholder="Please explain your reasoning..."
+                    rows="4"
+                  />
+                </div>
+              </>
             )}
 
             <button className="submit-survey-btn" onClick={submitSurvey}>
