@@ -146,38 +146,47 @@ function App() {
 
   // Submit survey responses
   const submitSurvey = () => {
-    if (
-      !engagementRating ||
-      !friendlinessRating ||
-      !overallRating ||
-      !sameLanguageRating ||
-      !guessLanguage ||
-      !nativeSpeakerReason ||
-      !continueChat ||
-      !chatPartnerType ||
-      !chatReasoningText ||
-      !isNativeSpeaker
-    ) {
+    const requiredFields = [
+      engagementRating,
+      friendlinessRating,
+      overallRating,
+      continueChat,
+      chatPartnerType,
+      chatReasoningText
+    ];
+
+    // Only check native speaker fields if chatPartnerType is "real"
+    const nativeSpeakerFields = chatPartnerType === "real" ? [
+      isNativeSpeaker,
+      nativeSpeakerReason
+    ] : [];
+
+    const allRequiredFields = [...requiredFields, ...nativeSpeakerFields];
+
+    if (allRequiredFields.some(field => !field)) {
       alert("Please answer all the survey questions before submitting.");
       return;
     }
+
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       alert("Connection to the server has been lost. Your survey cannot be submitted.");
       return;
     }
+
     const surveyData = {
       type: "survey",
       engagementRating,
       friendlinessRating,
       overallRating,
-      sameLanguageRating,
-      guessLanguage,
-      nativeSpeakerReason,
       continueChat,
       chatPartnerType,
       chatReasoningText,
-      isNativeSpeaker,
+      ...(chatPartnerType === "real" && {
+        isNativeSpeaker,
+        nativeSpeakerReason
+      })
     };
+
     console.log("Submitting survey data:", surveyData);
     socketRef.current.send(JSON.stringify(surveyData));
     alert("Thank you for your time and feedback!");
@@ -225,28 +234,28 @@ function App() {
               <div className="rating-card">
                 <h3>Translation Quality</h3>
                 <p>How does LLM translation compare to human translators?</p>
-                <div className="rating-grid">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <label 
-                      key={value}
-                      className={`rating-option ${qualityRating === value.toString() ? 'selected' : ''}`}
-                    >
+                <div className="radio-group">
+                  {[
+                    { value: "1", label: "Much worse" },
+                    { value: "2", label: "Slightly worse" },
+                    { value: "3", label: "About same" },
+                    { value: "4", label: "Slightly better" },
+                    { value: "5", label: "Much better" }
+                  ].map((option) => (
+                    <div key={option.value} className="radio-option">
                       <input
                         type="radio"
+                        id={`quality-${option.value}`}
                         name="qualityRating"
-                        value={value}
-                        checked={qualityRating === value.toString()}
+                        value={option.value}
+                        checked={qualityRating === option.value}
                         onChange={(e) => setQualityRating(e.target.value)}
                       />
-                      <span className="rating-value">{value}</span>
-                      <span className="rating-label">
-                        {value === 1 ? 'Much worse' : 
-                         value === 2 ? 'Slightly worse' :
-                         value === 3 ? 'About same' :
-                         value === 4 ? 'Slightly better' :
-                         'Much better'}
-                      </span>
-                    </label>
+                      <label className="radio-option-label" htmlFor={`quality-${option.value}`}>
+                        <span className="radio-value">{option.value}</span>
+                        <span className="radio-description">{option.label}</span>
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
