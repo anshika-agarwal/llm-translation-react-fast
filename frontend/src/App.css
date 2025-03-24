@@ -434,21 +434,19 @@ textarea::placeholder {
 .find-partner-btn {
   composes: button-primary;
   background: linear-gradient(135deg, #4B9EEB, #6366f1);
+  margin: 2rem auto 0;
 }
 
 .end-chat-btn {
   composes: button-primary;
   background: linear-gradient(135deg, #ef4444, #dc2626);
-  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
-}
-
-.end-chat-btn:hover {
-  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+  margin: 2rem auto 0;
 }
 
 .submit-survey-btn {
   composes: button-primary;
   background: linear-gradient(135deg, #4B9EEB, #6366f1);
+  margin: 2rem auto 0;
 }
 
 /* Radio Group Improvements */
