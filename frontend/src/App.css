@@ -203,11 +203,10 @@ body {
 }
 
 .survey-question h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
   color: var(--text);
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
 }
 
 .radio-options {
@@ -400,20 +399,20 @@ textarea::placeholder {
   padding: 2rem;
   border-radius: 1.25rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .rating-card h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
   color: var(--text);
 }
 
 .rating-card p {
+  font-size: 1rem;
   color: var(--text-light);
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
 }
 
 /* Modern Button Styles */
@@ -483,25 +482,12 @@ textarea::placeholder {
 .radio-group {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 0.75rem;
-  margin: 1.5rem 0;
+  gap: 0.5rem;
+  margin: 1rem 0;
 }
 
 .radio-option {
   position: relative;
-}
-
-.radio-option-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem 0.5rem;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  height: 100%;
 }
 
 .radio-option input[type="radio"] {
@@ -512,21 +498,36 @@ textarea::placeholder {
   cursor: pointer;
 }
 
+.radio-option-label {
+  min-height: 64px;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
 .radio-option input[type="radio"]:checked + .radio-option-label {
-  background: rgba(14, 165, 233, 0.1);
-  border-color: var(--primary);
+  background: rgba(14, 165, 233, 0.05);
+  border: 2px solid var(--primary);
 }
 
 .radio-option-label:hover {
   border-color: var(--primary);
-  background: rgba(14, 165, 233, 0.05);
+  background: rgba(14, 165, 233, 0.02);
 }
 
 .radio-value {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .radio-description {
@@ -657,16 +658,121 @@ textarea::placeholder {
   }
 
   .radio-group {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.25rem;
+  }
+  
+  .radio-option-label {
+    min-height: 56px;
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .radio-value {
+    font-size: 1.25rem;
   }
   
   .radio-description {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 }
 
 @media (max-width: 480px) {
   .radio-group {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .radio-option-label {
+    min-height: 52px;
+  }
+  
+  .radio-value {
+    font-size: 1.125rem;
+  }
+  
+  .radio-description {
+    font-size: 0.6rem;
+  }
+}
+
+/* Consent Page Styles */
+.consent-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.consent-content {
+  background: var(--surface);
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.consent-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.consent-section {
+  margin-bottom: 2rem;
+}
+
+.consent-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.consent-section p {
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.continue-btn {
+  width: 100%;
+  max-width: 300px;
+  margin: 2rem auto 0;
+  display: block;
+}
+
+/* Update Radio Button Styles */
+.radio-option-label {
+  min-height: 80px;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.radio-value {
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.radio-description {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .consent-page {
+    padding: 1rem;
+  }
+  
+  .consent-content {
+    padding: 1.5rem;
+  }
+  
+  .consent-content h2 {
+    font-size: 1.5rem;
   }
 }

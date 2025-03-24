@@ -35,6 +35,9 @@ function App() {
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
+  // Add new state for consent
+  const [hasConsented, setHasConsented] = useState(false);
+
   // Function to initiate a chat (creates a WebSocket connection)
   const findPair = () => {
     if (!language || !qualityRating || !seamlessRating || !translationeseRating) {
@@ -203,126 +206,166 @@ function App() {
           )}
         </header>
 
-        {/* Language Selection */}
-        {!isPaired && (
-          <div className="language-selection">
-            <div className="section-header">
-              <h2>Select Your Language</h2>
-              <p>Choose your native/most fluent language for the chat</p>
-            </div>
-
-            <div className="language-select">
-              <select 
-                value={language} 
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                <option value="" disabled>Select Language</option>
-                <option value="chinese">Chinese</option>
-                <option value="dutch">Dutch</option>
-                <option value="english">English</option>
-                <option value="french">French</option>
-                <option value="german">German</option>
-                <option value="hindi">Hindi</option>
-                <option value="italian">Italian</option>
-                <option value="japanese">Japanese</option>
-                <option value="korean">Korean</option>
-                <option value="spanish">Spanish</option>
-              </select>
-            </div>
-
-            <div className="rating-section">
-              <div className="rating-card">
-                <h3>Translation Quality</h3>
-                <p>How does LLM translation compare to human translators?</p>
-                <div className="radio-group">
-                  {[
-                    { value: "1", label: "Much worse" },
-                    { value: "2", label: "Slightly worse" },
-                    { value: "3", label: "About same" },
-                    { value: "4", label: "Slightly better" },
-                    { value: "5", label: "Much better" }
-                  ].map((option) => (
-                    <div key={option.value} className="radio-option">
-                      <input
-                        type="radio"
-                        id={`quality-${option.value}`}
-                        name="qualityRating"
-                        value={option.value}
-                        checked={qualityRating === option.value}
-                        onChange={(e) => setQualityRating(e.target.value)}
-                      />
-                      <label className="radio-option-label" htmlFor={`quality-${option.value}`}>
-                        <span className="radio-value">{option.value}</span>
-                        <span className="radio-description">{option.label}</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
+        {/* Add the consent page to the main render function, before the language selection */}
+        {!hasConsented ? (
+          <div className="consent-page">
+            <div className="consent-content">
+              <h2>Research Study Consent Form</h2>
+              
+              <div className="consent-section">
+                <h3>Description</h3>
+                <p>You are invited to participate in a research study on the use of LLMs as translators and their effect on engagement and authenticity in conversation. You will be asked to chat anonymously with another user and answer survey questions about your chat experience.</p>
               </div>
 
-              <div className="rating-card">
-                <h3>Translation Seamless Conversations</h3>
-                <p>How much do you agree with the following statement: LLM translations can facilitate seamless conversations between people speaking different languages?</p>
-                <div className="rating-grid">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <label 
-                      key={value}
-                      className={`rating-option ${seamlessRating === value.toString() ? 'selected' : ''}`}
-                    >
-                      <input
-                        type="radio"
-                        name="seamlessRating"
-                        value={value}
-                        checked={seamlessRating === value.toString()}
-                        onChange={(e) => setSeamlessRating(e.target.value)}
-                      />
-                      <span className="rating-value">{value}</span>
-                      <span className="rating-label">
-                        {value === 1 ? 'Strongly disagree' : 
-                         value === 2 ? 'Disagree' :
-                         value === 3 ? 'Neutral' :
-                         value === 4 ? 'Agree' :
-                         'Strongly agree'}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+              <div className="consent-section">
+                <h3>Time Involvement</h3>
+                <p>Your participation will take approximately 5-7 minutes.</p>
               </div>
 
-              <div className="rating-card">
-                <h3>Translation Avoidance of Translationese</h3>
-                <p>How effective do you think LLMs are at avoiding the "translationese" problem (producing translations that sound unnatural or machine-like)?</p>
-                <div className="rating-grid">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <label 
-                      key={value}
-                      className={`rating-option ${translationeseRating === value.toString() ? 'selected' : ''}`}
-                    >
-                      <input
-                        type="radio"
-                        name="translationeseRating"
-                        value={value}
-                        checked={translationeseRating === value.toString()}
-                        onChange={(e) => setTranslationeseRating(e.target.value)}
-                      />
-                      <span className="rating-value">{value}</span>
-                      <span className="rating-label">
-                        {value === 1 ? 'Very ineffective' : 
-                         value === 2 ? 'Somewhat ineffective' :
-                         value === 3 ? 'Neutral' :
-                         value === 4 ? 'Somewhat effective' :
-                         'Very effective'}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+              <div className="consent-section">
+                <h3>Risks and Benefits</h3>
+                <p>The risks associated with this study are none. Study data will be stored securely, in compliance with Stanford University standards, minimizing the risk of confidentiality breach.</p>
+                <p>The benefits which may reasonably be expected to result from this study are improved understanding of AI-assisted communication and translation. We cannot and do not guarantee or promise that you will receive any benefits from this study.</p>
               </div>
+
+              <div className="consent-section">
+                <h3>Payments</h3>
+                <p>You will receive $2.75 as payment for your participation.</p>
+              </div>
+
+              <div className="consent-section">
+                <h3>Participant's Rights</h3>
+                <p>If you have read this form and have decided to participate in this project, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at any time without penalty or loss of benefits to which you are otherwise entitled.</p>
+                <p>The alternative is not to participate. You have the right to refuse to answer particular questions. The results of this research study may be presented at scientific or professional meetings or published in scientific journals. Your individual privacy will be maintained in all published and written data resulting from the study.</p>
+              </div>
+
+              <button className="button-primary continue-btn" onClick={() => setHasConsented(true)}>
+                Continue to Chat
+              </button>
             </div>
-
-            <button className="find-partner-btn" onClick={findPair}>
-              Find Chat Partner
-            </button>
           </div>
+        ) : (
+          // Existing language selection and chat components
+          !isPaired && (
+            <div className="language-selection">
+              <div className="section-header">
+                <h2>Select Your Language</h2>
+                <p>Choose your native/most fluent language for the chat</p>
+              </div>
+
+              <div className="language-select">
+                <select 
+                  value={language} 
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <option value="" disabled>Select Language</option>
+                  <option value="chinese">Chinese</option>
+                  <option value="dutch">Dutch</option>
+                  <option value="english">English</option>
+                  <option value="french">French</option>
+                  <option value="german">German</option>
+                  <option value="hindi">Hindi</option>
+                  <option value="italian">Italian</option>
+                  <option value="japanese">Japanese</option>
+                  <option value="korean">Korean</option>
+                  <option value="spanish">Spanish</option>
+                </select>
+              </div>
+
+              <div className="rating-section">
+                <div className="rating-card">
+                  <h3>Translation Quality</h3>
+                  <p>How does LLM translation compare to human translators?</p>
+                  <div className="radio-group">
+                    {[
+                      { value: "1", label: "Much worse" },
+                      { value: "2", label: "Slightly worse" },
+                      { value: "3", label: "About same" },
+                      { value: "4", label: "Slightly better" },
+                      { value: "5", label: "Much better" }
+                    ].map((option) => (
+                      <div key={option.value} className="radio-option">
+                        <input
+                          type="radio"
+                          id={`quality-${option.value}`}
+                          name="qualityRating"
+                          value={option.value}
+                          checked={qualityRating === option.value}
+                          onChange={(e) => setQualityRating(e.target.value)}
+                        />
+                        <label className="radio-option-label" htmlFor={`quality-${option.value}`}>
+                          <span className="radio-value">{option.value}</span>
+                          <span className="radio-description">{option.label}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rating-card">
+                  <h3>Translation Seamless Conversations</h3>
+                  <p>How much do you agree with the following statement: LLM translations can facilitate seamless conversations between people speaking different languages?</p>
+                  <div className="radio-group">
+                    {[
+                      { value: "1", label: "Strongly disagree" },
+                      { value: "2", label: "Disagree" },
+                      { value: "3", label: "Neutral" },
+                      { value: "4", label: "Agree" },
+                      { value: "5", label: "Strongly agree" }
+                    ].map((option) => (
+                      <div key={option.value} className="radio-option">
+                        <input
+                          type="radio"
+                          id={`seamless-${option.value}`}
+                          name="seamlessRating"
+                          value={option.value}
+                          checked={seamlessRating === option.value}
+                          onChange={(e) => setSeamlessRating(e.target.value)}
+                        />
+                        <label className="radio-option-label" htmlFor={`seamless-${option.value}`}>
+                          <span className="radio-value">{option.value}</span>
+                          <span className="radio-description">{option.label}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rating-card">
+                  <h3>Translation Avoidance of Translationese</h3>
+                  <p>How effective do you think LLMs are at avoiding the "translationese" problem (producing translations that sound unnatural or machine-like)?</p>
+                  <div className="radio-group">
+                    {[
+                      { value: "1", label: "Very ineffective" },
+                      { value: "2", label: "Somewhat ineffective" },
+                      { value: "3", label: "Neutral" },
+                      { value: "4", label: "Somewhat effective" },
+                      { value: "5", label: "Very effective" }
+                    ].map((option) => (
+                      <div key={option.value} className="radio-option">
+                        <input
+                          type="radio"
+                          id={`translationese-${option.value}`}
+                          name="translationeseRating"
+                          value={option.value}
+                          checked={translationeseRating === option.value}
+                          onChange={(e) => setTranslationeseRating(e.target.value)}
+                        />
+                        <label className="radio-option-label" htmlFor={`translationese-${option.value}`}>
+                          <span className="radio-value">{option.value}</span>
+                          <span className="radio-description">{option.label}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button className="find-partner-btn" onClick={findPair}>
+                Find Chat Partner
+              </button>
+            </div>
+          )
         )}
 
         {/* Chat Section */}
