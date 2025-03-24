@@ -44,13 +44,6 @@ function App() {
   // Add this near the top with other state declarations
   const [conversationStarter, setConversationStarter] = useState("");
 
-  // Add this array of conversation starters
-  const conversationStarters = [
-    "What would constitute a \"perfect\" day for you?",
-    "What do you value most in a friendship?",
-    "How do you feel about your relationship with your mother?"
-  ];
-
   // Function to scroll to top
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -122,9 +115,8 @@ function App() {
           setShowChat(true);
           setShowChatPartnerPopup(false);
           setConversationId(data.conversation_id);
-          // Select a random conversation starter
-          const randomIndex = Math.floor(Math.random() * conversationStarters.length);
-          setConversationStarter(conversationStarters[randomIndex]);
+          // Use the conversation starter from the backend
+          setConversationStarter(data.convo_starter);
           console.log(data.message);
         } else if (data.type === "timer") {
           const minutes = Math.floor(data.remaining_time / 60);
