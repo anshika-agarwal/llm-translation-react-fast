@@ -10,6 +10,10 @@ from openai import OpenAI
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from datetime import datetime, timedelta
+import aiohttp
+from typing import Dict, List, Tuple, Optional
+import random
 
 # Load environment variables and initialize FastAPI app
 load_dotenv()
@@ -39,11 +43,29 @@ DB_CONFIG = {
     "port": os.getenv("DB_PORT", "5432")
 }
 
+# Add these constants after the DB_CONFIG
+PROLIFIC_API_KEY = os.getenv("PROLIFIC_API_KEY")
+PROLIFIC_API_URL = "https://api.prolific.com/api/v1"
+MAX_WAIT_TIME = 60  # seconds
+PRIORITY_PAIRS = [
+    ("english", "spanish"),
+    ("spanish", "english")
+]
+CONTROL_PAIRS = [
+    ("english", "english"),
+    ("spanish", "spanish")
+]
+CONVERSATION_STARTERS = [
+    "What would constitute a \"perfect\" day for you?",
+    "What do you value most in a friendship?",
+    "How do you feel about your relationship with your mother?"
+]
+
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
 
 # Global variables for WebSocket user management
-waiting_room = []         # List of tuples: (websocket, timestamp)
+waiting_room: List[Tuple[WebSocket, str, datetime]] = []  # (websocket, language, join_time)
 active_users = {}         # Maps a websocket to its partner
 user_languages = {}       # Maps a websocket to its chosen language
 user_presurveys = {}      # Maps a websocket to its presurvey data
@@ -87,7 +109,7 @@ def remove_user_from_active(user: WebSocket):
         if partner:
             active_users.pop(partner, None)
             print(f"[INFO] Removed users {websocket_to_uuid.get(user)} and {websocket_to_uuid.get(partner)} from active_users.")
-    waiting_room[:] = [(w, ts) for w, ts in waiting_room if w != user]
+    waiting_room[:] = [(w, lang, join_time) for w, lang, join_time in waiting_room if w != user]
 
 async def translate_message(message: str, source_language: str, target_language: str) -> str:
     """
@@ -136,59 +158,137 @@ async def chat_timer_task(user1: WebSocket, user2: WebSocket, conversation_id):
     except asyncio.CancelledError:
         print(f"[INFO] Chat timer cancelled for conversation {conversation_id}.")
 
+async def notify_prolific_overflow(participant_id: str):
+    """Notify Prolific API about participant overflow."""
+    if not PROLIFIC_API_KEY:
+        print("[WARNING] Prolific API key not configured")
+        return
+    
+    headers = {
+        "Authorization": f"Token {PROLIFIC_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{PROLIFIC_API_URL}/participants/{participant_id}/status/",
+                headers=headers,
+                json={"status": "APPROVED"}
+            ) as response:
+                if response.status == 200:
+                    print(f"[INFO] Successfully notified Prolific about participant {participant_id}")
+                else:
+                    print(f"[ERROR] Failed to notify Prolific about participant {participant_id}")
+    except Exception as e:
+        print(f"[ERROR] Error notifying Prolific: {e}")
+
+def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
+    """Find the best matching partner based on language preferences and waiting time."""
+    current_time = datetime.now()
+    
+    # First, try to find a priority match (different languages)
+    for waiting_ws, waiting_lang, join_time in waiting_room:
+        if waiting_ws != websocket and (language, waiting_lang) in PRIORITY_PAIRS:
+            return waiting_ws
+    
+    # If no priority match, check for control group matches
+    for waiting_ws, waiting_lang, join_time in waiting_room:
+        if waiting_ws != websocket and (language, waiting_lang) in CONTROL_PAIRS:
+            # Check if either participant has waited too long
+            wait_time = (current_time - join_time).total_seconds()
+            if wait_time >= MAX_WAIT_TIME:
+                return waiting_ws
+    
+    return None
+
+async def cleanup_waiting_room():
+    """Remove participants who have waited too long."""
+    current_time = datetime.now()
+    global waiting_room
+    
+    # Find participants who have waited too long
+    expired_participants = [
+        (ws, lang) for ws, lang, join_time in waiting_room 
+        if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME
+    ]
+    
+    # Remove expired participants and notify Prolific
+    for ws, lang in expired_participants:
+        waiting_room = [(w, l, t) for w, l, t in waiting_room if w != ws]
+        participant_id = websocket_to_uuid.get(ws)
+        if participant_id:
+            await notify_prolific_overflow(participant_id)
+        await safe_close(ws)
+
 async def pair_users():
-    """Pairs two waiting users, creates a conversation record in the DB, and notifies them."""
+    """Pairs users based on language preferences and waiting time."""
     global waiting_room, active_users, conversation_mapping
-    if len(waiting_room) >= 2:
-        user1, _ = waiting_room.pop(0)
-        user2, _ = waiting_room.pop(0)
-        active_users[user1] = user2
-        active_users[user2] = user1
-
-        # Get persistent UUIDs
-        user1_id = websocket_to_uuid.get(user1)
-        user2_id = websocket_to_uuid.get(user2)
-
-        try:
-            conn = get_db_connection()
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    INSERT INTO conversations (
-                        user1_id, user2_id, user1_lang, user2_lang, "group", model, conversation_history, user1_presurvey, user2_presurvey
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING conversation_id
-                """, (
-                    user1_id,
-                    user2_id,
-                    user_languages[user1],
-                    user_languages[user2],
-                    "control" if user_languages[user1].lower() == user_languages[user2].lower() else "experiment",
-                    'gpt-4o',
-                    Json([]),
-                    Json(user_presurveys[user1]),
-                    Json(user_presurveys[user2])
-                ))
-                conversation_id = cursor.fetchone()[0]
-                conn.commit()
-            print(f"[INFO] Paired users {user1_id} and {user2_id} in conversation {conversation_id}.")
-            conversation_mapping[user1] = conversation_id
-            conversation_mapping[user2] = conversation_id
-
-            pairing_message = json.dumps({
-                "type": "paired",
-                "message": "You are now paired. Start chatting!",
-                "conversation_id": conversation_id
-            })
-            await asyncio.gather(user1.send_text(pairing_message), user2.send_text(pairing_message))
-            # Start chat timer for this conversation
-            timer_task = asyncio.create_task(chat_timer_task(user1, user2, conversation_id))
-            chat_timers[conversation_id] = timer_task
-
-        except Exception as e:
-            print(f"[ERROR] Failed to pair users or insert conversation into DB: {e}")
-        finally:
-            if conn:
-                conn.close()
+    
+    # Clean up expired participants
+    await cleanup_waiting_room()
+    
+    # Try to pair remaining participants
+    for websocket, language, join_time in waiting_room[:]:
+        match = find_best_match(websocket, language)
+        if match:
+            # Remove both participants from waiting room
+            waiting_room = [(w, l, t) for w, l, t in waiting_room 
+                          if w not in (websocket, match)]
+            
+            # Set up the pair
+            active_users[websocket] = match
+            active_users[match] = websocket
+            
+            # Get persistent UUIDs
+            user1_id = websocket_to_uuid.get(websocket)
+            user2_id = websocket_to_uuid.get(match)
+            
+            # Select a random conversation starter
+            convo_starter = CONVERSATION_STARTERS[random.randint(0, len(CONVERSATION_STARTERS) - 1)]
+            
+            try:
+                conn = get_db_connection()
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        INSERT INTO conversations (
+                            user1_id, user2_id, user1_lang, user2_lang, "group", model, conversation_history, user1_presurvey, user2_presurvey, convo_starter
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING conversation_id
+                    """, (
+                        user1_id,
+                        user2_id,
+                        user_languages[websocket],
+                        user_languages[match],
+                        "control" if user_languages[websocket].lower() == user_languages[match].lower() else "experiment",
+                        'gpt-4o',
+                        Json([]),
+                        Json(user_presurveys[websocket]),
+                        Json(user_presurveys[match]),
+                        convo_starter
+                    ))
+                    conversation_id = cursor.fetchone()[0]
+                    conn.commit()
+                print(f"[INFO] Paired users {user1_id} and {user2_id} in conversation {conversation_id}.")
+                conversation_mapping[websocket] = conversation_id
+                conversation_mapping[match] = conversation_id
+                
+                pairing_message = json.dumps({
+                    "type": "paired",
+                    "message": "You are now paired. Start chatting!",
+                    "conversation_id": conversation_id,
+                    "convo_starter": convo_starter
+                })
+                await asyncio.gather(websocket.send_text(pairing_message), match.send_text(pairing_message))
+                # Start chat timer for this conversation
+                timer_task = asyncio.create_task(chat_timer_task(websocket, match, conversation_id))
+                chat_timers[conversation_id] = timer_task
+                
+            except Exception as e:
+                print(f"[ERROR] Failed to pair users or insert conversation into DB: {e}")
+            finally:
+                if conn:
+                    conn.close()
 
 async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     """
@@ -336,7 +436,7 @@ async def websocket_endpoint(websocket: WebSocket):
     user_id = str(uuid.uuid4())
     websocket_to_uuid[websocket] = user_id
     print(f"[INFO] Assigned UUID {user_id} to WebSocket.")
-
+    
     try:
         # Expect an initial message with language and presurvey data
         message = await safe_receive(websocket)
@@ -346,31 +446,40 @@ async def websocket_endpoint(websocket: WebSocket):
         if data["type"] == "language":
             user_languages[websocket] = data["language"]
             user_presurveys[websocket] = {
-                "qualityRating": data.get("question1"),
-                "seamlessRating": data.get("question2"),
-                "translationeseRating": data.get("question3")
+                "qualityRating": data.get("qualityRating"),
+                "seamlessRating": data.get("seamlessRating"),
+                "translationeseRating": data.get("translationeseRating")
             }
-            waiting_room.append((websocket, time.time()))
+            # Add to waiting room with current timestamp
+            waiting_room.append((websocket, data["language"], datetime.now()))
             print(f"[INFO] User {user_id} selected language: {data['language']}.")
-
-        # If two or more users are waiting, attempt pairing
-        if len(waiting_room) >= 2:
+            
+            # Try to pair immediately
             await pair_users()
-
-        # Wait until this websocket is paired
-        while websocket not in conversation_mapping:
-            await asyncio.sleep(1)
-        conversation_id = conversation_mapping.get(websocket)
-        partner = active_users.get(websocket)
-
-        if conversation_id is not None and partner is not None:
-            # Ensure that the central chat session is launched only once per conversation.
-            if conversation_id not in chat_sessions:
-                chat_sessions[conversation_id] = asyncio.create_task(start_chat(websocket, partner, conversation_id))
-            await chat_sessions[conversation_id]
-        else:
-            print(f"[ERROR] Conversation details not found for user {user_id}.")
-            await websocket.close(code=1011)
+            
+            # Wait until this websocket is paired or times out
+            while websocket not in conversation_mapping:
+                await asyncio.sleep(1)
+                # Check if this participant has waited too long
+                current_time = datetime.now()
+                join_time = next((t for w, _, t in waiting_room if w == websocket), None)
+                if join_time and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
+                    print(f"[INFO] Participant {user_id} timed out waiting for a match.")
+                    await notify_prolific_overflow(user_id)
+                    await safe_close(websocket)
+                    return
+            
+            conversation_id = conversation_mapping.get(websocket)
+            partner = active_users.get(websocket)
+            
+            if conversation_id is not None and partner is not None:
+                if conversation_id not in chat_sessions:
+                    chat_sessions[conversation_id] = asyncio.create_task(start_chat(websocket, partner, conversation_id))
+                await chat_sessions[conversation_id]
+            else:
+                print(f"[ERROR] Conversation details not found for user {user_id}.")
+                await websocket.close(code=1011)
+                
     except WebSocketDisconnect:
         print(f"[INFO] WebSocket {user_id} disconnected.")
     except Exception as e:

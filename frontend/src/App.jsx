@@ -318,15 +318,7 @@ function App() {
                   onChange={(e) => setLanguage(e.target.value)}
                 >
                   <option value="" disabled>Select Language</option>
-                  <option value="chinese">Chinese</option>
-                  <option value="dutch">Dutch</option>
                   <option value="english">English</option>
-                  <option value="french">French</option>
-                  <option value="german">German</option>
-                  <option value="hindi">Hindi</option>
-                  <option value="italian">Italian</option>
-                  <option value="japanese">Japanese</option>
-                  <option value="korean">Korean</option>
                   <option value="spanish">Spanish</option>
                 </select>
               </div>
