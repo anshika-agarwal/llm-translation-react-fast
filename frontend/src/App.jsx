@@ -274,7 +274,6 @@ function App() {
 
               <div className="rating-section">
                 <div className="rating-card">
-                  <h3>Translation Quality</h3>
                   <p>How does LLM translation compare to human translators?</p>
                   <div className="radio-group">
                     {[
@@ -303,7 +302,6 @@ function App() {
                 </div>
 
                 <div className="rating-card">
-                  <h3>Translation Seamless Conversations</h3>
                   <p>How much do you agree with the following statement: LLM translations can facilitate seamless conversations between people speaking different languages?</p>
                   <div className="radio-group">
                     {[
@@ -332,7 +330,6 @@ function App() {
                 </div>
 
                 <div className="rating-card">
-                  <h3>Translation Avoidance of Translationese</h3>
                   <p>How effective do you think LLMs are at avoiding the "translationese" problem (producing translations that sound unnatural or machine-like)?</p>
                   <div className="radio-group">
                     {[

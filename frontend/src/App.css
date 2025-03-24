@@ -70,19 +70,29 @@ body {
   display: flex;
   flex-direction: column;
   max-width: 1000px;
-  margin: 0 auto;
-  width: 100%;
+  margin: 2rem auto;
+  width: 95%;
   background: var(--surface);
-  height: calc(100vh - 4rem);
+  height: calc(100vh - 8rem);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .chat-header {
-  padding: 1rem 1.5rem;
+  padding: 1.5rem 2rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--surface);
+}
+
+.chat-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
 }
 
 .timer {
@@ -96,7 +106,7 @@ body {
 
 .messages-container {
   flex: 1;
-  padding: 1.5rem;
+  padding: 2rem;
   overflow-y: auto;
   background: var(--background);
   display: flex;
@@ -106,17 +116,17 @@ body {
 
 .message {
   max-width: 70%;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.9375rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  font-size: 1rem;
   line-height: 1.5;
   animation: slideIn 0.2s ease-out;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .message.user {
   margin-left: auto;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border-bottom-right-radius: 0.25rem;
 }
@@ -130,21 +140,22 @@ body {
 }
 
 .chat-input {
-  padding: 1rem 1.5rem;
+  padding: 1.5rem 2rem;
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   align-items: center;
 }
 
 .chat-input input {
   flex: 1;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 1.5rem;
-  font-size: 0.9375rem;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--border);
+  border-radius: 1rem;
+  font-size: 1rem;
   transition: all 0.2s;
+  background: var(--background);
 }
 
 .chat-input input:focus {
@@ -154,18 +165,11 @@ body {
 }
 
 .chat-input button {
-  padding: 0.75rem 1.5rem;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 1.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.chat-input button:hover {
-  background: var(--primary-dark);
+  composes: button-primary;
+  margin: 0;
+  padding: 1rem 2rem;
+  max-width: none;
+  width: auto;
 }
 
 /* Survey Section */
@@ -297,23 +301,8 @@ textarea::placeholder {
 }
 
 .submit-survey-btn {
-  width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
-  border: none;
-  border-radius: 1rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+  composes: button-primary;
   margin-top: 3rem;
-  box-shadow: 0 4px 6px rgba(14, 165, 233, 0.1);
-}
-
-.submit-survey-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(14, 165, 233, 0.2);
 }
 
 /* Rating grid for the initial questions */
@@ -401,21 +390,20 @@ textarea::placeholder {
   margin-bottom: 2rem;
 }
 
-.rating-card h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: var(--text);
-}
-
 .rating-card p {
-  font-size: 1rem;
-  color: var(--text-light);
-  margin-bottom: 1.25rem;
+  font-size: 1.125rem;
+  color: var(--text);
+  margin-bottom: 1.5rem;
   line-height: 1.5;
+  font-weight: 500;
 }
 
-/* Modern Button Styles */
+/* Remove the h3 styles since we're not using them anymore */
+.rating-card h3 {
+  display: none;
+}
+
+/* Common Button Styles */
 .button-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
@@ -430,18 +418,10 @@ textarea::placeholder {
   text-align: center;
   position: relative;
   overflow: hidden;
-}
-
-.button-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
+  max-width: 300px;
+  margin: 2rem auto;
+  display: block;
 }
 
 .button-primary:hover {
@@ -449,33 +429,19 @@ textarea::placeholder {
   box-shadow: 0 6px 12px rgba(14, 165, 233, 0.3);
 }
 
-.button-primary:hover::before {
-  transform: translateX(100%);
-}
-
 .find-partner-btn {
   composes: button-primary;
-  width: 100%;
-  max-width: 400px;
-  margin: 2rem auto;
-  display: block;
-  font-size: 1.25rem;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
 }
 
 .end-chat-btn {
   composes: button-primary;
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   margin: 1.5rem auto;
-  width: 100%;
-  max-width: 200px;
-  display: block;
-  padding: 1rem 2rem;
 }
 
 .end-chat-btn:hover {
-  background: linear-gradient(135deg, #dc2626, #991b1b);
+  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
 }
 
 /* Radio Group Improvements */
