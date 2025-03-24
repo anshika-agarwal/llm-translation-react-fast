@@ -167,9 +167,10 @@ body {
 .chat-input button {
   composes: button-primary;
   margin: 0;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   max-width: none;
   width: auto;
+  font-size: 1rem;
 }
 
 /* Survey Section */
@@ -302,7 +303,6 @@ textarea::placeholder {
 
 .submit-survey-btn {
   composes: button-primary;
-  margin-top: 3rem;
 }
 
 /* Rating grid for the initial questions */
@@ -405,43 +405,49 @@ textarea::placeholder {
 
 /* Common Button Styles */
 .button-primary {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: linear-gradient(90deg, #4B91F7 0%, #367AF6 100%);
   color: white;
-  padding: 1rem 2rem;
+  padding: 1rem;
   border: none;
-  border-radius: 1rem;
+  border-radius: 50px;
   font-size: 1.125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(14, 165, 233, 0.2);
+  box-shadow: 0px 0.5px 1.5px rgba(54, 122, 246, 0.25);
   text-align: center;
-  position: relative;
-  overflow: hidden;
   width: 100%;
   max-width: 300px;
   margin: 2rem auto;
   display: block;
+  letter-spacing: 0.01em;
 }
 
 .button-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(14, 165, 233, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0px 1px 3px rgba(54, 122, 246, 0.35);
 }
 
 .find-partner-btn {
   composes: button-primary;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
 }
 
 .end-chat-btn {
   composes: button-primary;
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  margin: 1.5rem auto;
+  background: linear-gradient(90deg, #F74B4B 0%, #F63636 100%);
+  box-shadow: 0px 0.5px 1.5px rgba(246, 54, 54, 0.25);
 }
 
 .end-chat-btn:hover {
-  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+  box-shadow: 0px 1px 3px rgba(246, 54, 54, 0.35);
+}
+
+.submit-survey-btn {
+  composes: button-primary;
+}
+
+.continue-btn {
+  composes: button-primary;
 }
 
 /* Radio Group Improvements */
