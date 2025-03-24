@@ -61,8 +61,14 @@ async def safe_receive(websocket: WebSocket):
     except WebSocketDisconnect:
         print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} disconnected during receive.")
         return None
+    except RuntimeError as e:
+        if "Cannot call 'receive' once a disconnect message has been received" in str(e):
+            print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} already disconnected.")
+        else:
+            print(f"[ERROR] Runtime error while receiving message: {e}")
+        return None
     except Exception as e:
-        print(f"[ERROR] Error while receiving message: {e}")
+        print(f"[ERROR] Unexpected error while receiving message: {e}")
         return None
 
 async def safe_close(websocket: WebSocket):
