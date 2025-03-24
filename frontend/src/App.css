@@ -528,9 +528,10 @@ textarea::placeholder {
 }
 
 .radio-description {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-light);
-  line-height: 1.2;
+  line-height: 1.3;
+  font-weight: 500;
 }
 
 /* Binary choice radio group (Yes/No questions) */
@@ -669,7 +670,7 @@ textarea::placeholder {
   }
   
   .radio-description {
-    font-size: 0.65rem;
+    font-size: 0.8rem;
   }
 }
 
@@ -687,7 +688,7 @@ textarea::placeholder {
   }
   
   .radio-description {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -754,8 +755,10 @@ textarea::placeholder {
 }
 
 .radio-description {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-light);
   line-height: 1.3;
+  font-weight: 500;
 }
 
 /* Responsive adjustments */
@@ -782,4 +785,27 @@ html {
 .rating-section {
   max-width: 1000px;
   margin: 0 auto;
+}
+
+/* Conversation Starter */
+.conversation-starter {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--border);
+  text-align: center;
+}
+
+.conversation-starter p {
+  margin: 0;
+  color: var(--text-light);
+}
+
+.conversation-starter .starter-question {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 0.5rem;
+  line-height: 1.4;
 }
