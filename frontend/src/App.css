@@ -170,6 +170,7 @@ body {
   padding: 0.75rem 1.5rem;
   max-width: none;
   width: auto;
+  border-radius: 1.5rem;
   font-size: 1rem;
 }
 
@@ -303,6 +304,7 @@ textarea::placeholder {
 
 .submit-survey-btn {
   composes: button-primary;
+  background: linear-gradient(135deg, #4B9EEB, #6366f1);
 }
 
 /* Rating grid for the initial questions */
@@ -405,49 +407,48 @@ textarea::placeholder {
 
 /* Common Button Styles */
 .button-primary {
-  background: linear-gradient(90deg, #4B91F7 0%, #367AF6 100%);
+  background: linear-gradient(135deg, #4B9EEB, #6366f1);
   color: white;
-  padding: 1rem;
+  padding: 1rem 2rem;
   border: none;
-  border-radius: 50px;
+  border-radius: 2rem;
   font-size: 1.125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0px 0.5px 1.5px rgba(54, 122, 246, 0.25);
+  box-shadow: 0 4px 6px rgba(14, 165, 233, 0.2);
   text-align: center;
+  position: relative;
+  overflow: hidden;
   width: 100%;
   max-width: 300px;
   margin: 2rem auto;
   display: block;
-  letter-spacing: 0.01em;
 }
 
 .button-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0px 1px 3px rgba(54, 122, 246, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(14, 165, 233, 0.3);
 }
 
 .find-partner-btn {
   composes: button-primary;
+  background: linear-gradient(135deg, #4B9EEB, #6366f1);
 }
 
 .end-chat-btn {
   composes: button-primary;
-  background: linear-gradient(90deg, #F74B4B 0%, #F63636 100%);
-  box-shadow: 0px 0.5px 1.5px rgba(246, 54, 54, 0.25);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
 }
 
 .end-chat-btn:hover {
-  box-shadow: 0px 1px 3px rgba(246, 54, 54, 0.35);
+  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
 }
 
 .submit-survey-btn {
   composes: button-primary;
-}
-
-.continue-btn {
-  composes: button-primary;
+  background: linear-gradient(135deg, #4B9EEB, #6366f1);
 }
 
 /* Radio Group Improvements */
@@ -708,10 +709,9 @@ textarea::placeholder {
 }
 
 .continue-btn {
-  width: 100%;
-  max-width: 300px;
+  composes: button-primary;
+  background: linear-gradient(135deg, #4B9EEB, #6366f1);
   margin: 2rem auto 0;
-  display: block;
 }
 
 /* Update Radio Button Styles */
