@@ -48,10 +48,10 @@ function App() {
 
   // Effect to scroll to top when sections change
   React.useEffect(() => {
-    if (showChat || showSurvey || !hasConsented) {
+    if (showChat || showSurvey || !hasConsented || isPaired) {
       scrollToTop();
     }
-  }, [showChat, showSurvey, hasConsented]);
+  }, [showChat, showSurvey, hasConsented, isPaired]);
 
   // Effect to reset states when survey is completed
   React.useEffect(() => {
@@ -282,7 +282,10 @@ function App() {
                 <p>The alternative is not to participate. You have the right to refuse to answer particular questions. The results of this research study may be presented at scientific or professional meetings or published in scientific journals. Your individual privacy will be maintained in all published and written data resulting from the study.</p>
               </div>
 
-              <button className="button-primary continue-btn" onClick={() => setHasConsented(true)}>
+              <button className="button-primary continue-btn" onClick={() => {
+                setHasConsented(true);
+                scrollToTop();
+              }}>
                 Continue to Chat
               </button>
             </div>
