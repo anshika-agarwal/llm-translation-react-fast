@@ -203,7 +203,7 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     try:
         conn = get_db_connection()
         chat_ended = False
-        while not chat_ended:
+        while not chat_ended or not all(survey_submitted.values()):  # Keep running until chat ends AND both surveys submitted
             # Create concurrent receive tasks for both users
             user1_task = asyncio.create_task(safe_receive(user1))
             user2_task = asyncio.create_task(safe_receive(user2))
@@ -262,9 +262,14 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                                 """, (Json(message), conversation_id))
                                 conn.commit()
                             print(f"[INFO] Stored survey for user {websocket_to_uuid.get(sender)} in conversation {conversation_id}.")
+                            survey_submitted[sender] = True
+                            # Notify the user their survey was received
+                            await sender.send_text(json.dumps({
+                                "type": "surveyReceived",
+                                "message": "Your survey has been submitted successfully."
+                            }))
                         except Exception as e:
                             print(f"[ERROR] Failed to store survey: {e}")
-                        survey_submitted[sender] = True
 
                     elif message["type"] == "typing":
                         target_user = user2 if task == user1_task else user1
@@ -311,9 +316,12 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     finally:
         if conn:
             conn.close()
-        # Safely close both WebSocket connections if surveys were submitted
-        await asyncio.gather(*(safe_close(user) for user, submitted in survey_submitted.items() if submitted))
-        print("[INFO] Chat session ended and WebSocket connections closed.")
+        # Only close connections after both surveys are submitted
+        if all(survey_submitted.values()):
+            await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
+            print("[INFO] Both surveys submitted. Chat session ended and WebSocket connections closed.")
+        else:
+            print("[WARNING] Chat session ended but not all surveys were submitted.")
 
 # -------------------- Endpoints --------------------
 

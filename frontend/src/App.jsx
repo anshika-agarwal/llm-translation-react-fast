@@ -79,7 +79,6 @@ function App() {
           setTimer(`${minutes}:${seconds.toString().padStart(2, "0")}`);
         } else if (data.type === "message") {
           setMessages((prev) => [...prev, { text: data.text, sender: "partner" }]);
-          // Hide typing indicator if implemented
         } else if (data.type === "typing") {
           // (Optional) Implement a typing indicator state here
         } else if (data.type === "survey" || data.type === "expired") {
@@ -87,6 +86,10 @@ function App() {
           setShowSurvey(true);
           setConversationId(data.conversation_id);
           console.log(data.message);
+        } else if (data.type === "surveyReceived") {
+          // Keep the connection open but hide the survey UI
+          setShowSurvey(false);
+          alert("Thank you for your feedback! Please wait while your chat partner completes their survey...");
         } else if (data.type === "waitingRoomTimeout") {
           alert("Could not find a chat partner. Try again later!");
           setShowChatPartnerPopup(false);
@@ -192,8 +195,7 @@ function App() {
 
     console.log("Submitting survey data:", surveyData);
     socketRef.current.send(JSON.stringify(surveyData));
-    alert("Thank you for your time and feedback!");
-    setShowSurvey(false);
+    // Note: We no longer close the survey here - we wait for the surveyReceived message
   };
 
   return (
