@@ -75,8 +75,9 @@ body {
   background: var(--surface);
   height: calc(100vh - 8rem);
   border-radius: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 .chat-header {
@@ -86,6 +87,7 @@ body {
   justify-content: space-between;
   align-items: center;
   background: var(--surface);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .chat-header h2 {
@@ -93,15 +95,19 @@ body {
   font-weight: 600;
   color: var(--text);
   margin: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .timer {
   font-size: 0.875rem;
   color: var(--primary);
-  font-weight: 500;
+  font-weight: 600;
   background: rgba(14, 165, 233, 0.1);
   padding: 0.5rem 1rem;
   border-radius: 1rem;
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.1);
 }
 
 .messages-container {
@@ -114,6 +120,23 @@ body {
   gap: 1rem;
 }
 
+.messages-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-light);
+}
+
 .message {
   max-width: 70%;
   padding: 1rem 1.25rem;
@@ -122,6 +145,7 @@ body {
   line-height: 1.5;
   animation: slideIn 0.2s ease-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
 .message.user {
@@ -146,6 +170,7 @@ body {
   display: flex;
   gap: 1rem;
   align-items: center;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .chat-input input {
@@ -209,10 +234,11 @@ body {
 }
 
 .survey-question h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
 }
 
 .radio-options {
@@ -393,11 +419,11 @@ textarea::placeholder {
 }
 
 .rating-card p {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: var(--text);
   margin-bottom: 1.5rem;
   line-height: 1.5;
-  font-weight: 500;
 }
 
 /* Remove the h3 styles since we're not using them anymore */
@@ -745,4 +771,9 @@ textarea::placeholder {
   .consent-content h2 {
     font-size: 1.5rem;
   }
+}
+
+/* Add smooth scroll behavior to html */
+html {
+  scroll-behavior: smooth;
 }

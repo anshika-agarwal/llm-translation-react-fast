@@ -38,6 +38,46 @@ function App() {
   // Add new state for consent
   const [hasConsented, setHasConsented] = useState(false);
 
+  // Add state for completed survey
+  const [surveyCompleted, setSurveyCompleted] = useState(false);
+
+  // Function to scroll to top
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Effect to scroll to top when sections change
+  React.useEffect(() => {
+    if (showChat || showSurvey || !hasConsented) {
+      scrollToTop();
+    }
+  }, [showChat, showSurvey, hasConsented]);
+
+  // Effect to reset states when survey is completed
+  React.useEffect(() => {
+    if (surveyCompleted) {
+      setHasConsented(false);
+      setIsPaired(false);
+      setShowChat(false);
+      setShowSurvey(false);
+      setMessages([]);
+      setLanguage("");
+      setQualityRating("");
+      setSeamlessRating("");
+      setTranslationeseRating("");
+      setEngagementRating("");
+      setFriendlinessRating("");
+      setOverallRating("");
+      setContinueChat("");
+      setChatPartnerType("");
+      setChatReasoningText("");
+      setIsNativeSpeaker("");
+      setNativeSpeakerReason("");
+      setSurveyCompleted(false);
+      scrollToTop();
+    }
+  }, [surveyCompleted]);
+
   // Function to initiate a chat (creates a WebSocket connection)
   const findPair = () => {
     if (!language || !qualityRating || !seamlessRating || !translationeseRating) {
@@ -89,7 +129,8 @@ function App() {
         } else if (data.type === "surveyReceived") {
           // Keep the connection open but hide the survey UI
           setShowSurvey(false);
-          alert("Thank you for your feedback! Please wait while your chat partner completes their survey...");
+          setSurveyCompleted(true);
+          alert("Thank you for your feedback! You will be redirected to the start page.");
         } else if (data.type === "waitingRoomTimeout") {
           alert("Could not find a chat partner. Try again later!");
           setShowChatPartnerPopup(false);
