@@ -82,10 +82,14 @@ async def safe_receive(websocket: WebSocket):
         return await websocket.receive_text()
     except WebSocketDisconnect:
         print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} disconnected during receive.")
+        # Clean up the user from all relevant data structures
+        remove_user_from_active(websocket)
         return None
     except RuntimeError as e:
         if "Cannot call 'receive' once a disconnect message has been received" in str(e):
             print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} already disconnected.")
+            # Clean up the user from all relevant data structures
+            remove_user_from_active(websocket)
         else:
             print(f"[ERROR] Runtime error while receiving message: {e}")
         return None
@@ -103,13 +107,25 @@ async def safe_close(websocket: WebSocket):
 
 def remove_user_from_active(user: WebSocket):
     """Removes a user from active users and cleans up the waiting room."""
-    global active_users, waiting_room
+    global active_users, waiting_room, user_languages, user_presurveys, conversation_mapping, websocket_to_uuid
+    
+    # Remove from active users
     if user in active_users:
         partner = active_users.pop(user, None)
         if partner:
             active_users.pop(partner, None)
             print(f"[INFO] Removed users {websocket_to_uuid.get(user)} and {websocket_to_uuid.get(partner)} from active_users.")
+    
+    # Remove from waiting room
     waiting_room[:] = [(w, lang, join_time) for w, lang, join_time in waiting_room if w != user]
+    
+    # Clean up other mappings
+    user_languages.pop(user, None)
+    user_presurveys.pop(user, None)
+    conversation_mapping.pop(user, None)
+    websocket_to_uuid.pop(user, None)
+    
+    print(f"[INFO] Cleaned up all data for user {websocket_to_uuid.get(user, 'unknown')}")
 
 async def translate_message(message: str, source_language: str, target_language: str) -> str:
     """
@@ -190,6 +206,9 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
     # First, try to find a priority match (different languages)
     for waiting_ws, waiting_lang, join_time in waiting_room:
         if waiting_ws != websocket and (language, waiting_lang) in PRIORITY_PAIRS:
+            # Remove the matched pair from waiting room immediately
+            waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
+                             if w not in (websocket, waiting_ws)]
             return waiting_ws
     
     # If no priority match, check for control group matches
@@ -198,6 +217,9 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
             # Check if either participant has waited too long
             wait_time = (current_time - join_time).total_seconds()
             if wait_time >= MAX_WAIT_TIME:
+                # Remove the matched pair from waiting room immediately
+                waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
+                                 if w not in (websocket, waiting_ws)]
                 return waiting_ws
     
     return None
@@ -228,14 +250,13 @@ async def pair_users():
     # Clean up expired participants
     await cleanup_waiting_room()
     
+    # Sort waiting room by join time to ensure FIFO order
+    waiting_room.sort(key=lambda x: x[2])  # Sort by join_time
+    
     # Try to pair remaining participants
     for websocket, language, join_time in waiting_room[:]:
         match = find_best_match(websocket, language)
         if match:
-            # Remove both participants from waiting room
-            waiting_room = [(w, l, t) for w, l, t in waiting_room 
-                          if w not in (websocket, match)]
-            
             # Set up the pair
             active_users[websocket] = match
             active_users[match] = websocket
