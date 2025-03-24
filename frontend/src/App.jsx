@@ -358,7 +358,7 @@ function App() {
                 </div>
               </div>
 
-              <button className="find-partner-btn" onClick={findPair}>
+              <button className="button-primary find-partner-btn" onClick={findPair}>
                 Find Chat Partner
               </button>
             </div>
@@ -395,7 +395,7 @@ function App() {
               <button onClick={sendMessage}>Send</button>
             </div>
 
-            <button className="end-chat-btn" onClick={endChat}>
+            <button className="button-primary end-chat-btn" onClick={endChat}>
               End Chat
             </button>
           </div>
@@ -605,7 +605,7 @@ function App() {
               </>
             )}
 
-            <button className="submit-survey-btn" onClick={submitSurvey}>
+            <button className="button-primary submit-survey-btn" onClick={submitSurvey}>
               Submit Survey
             </button>
           </div>
