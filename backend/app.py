@@ -554,20 +554,30 @@ async def websocket_endpoint(websocket: WebSocket):
             waiting_room.append((websocket, data["language"], datetime.now()))
             print(f"[INFO] User {user_id} selected language: {data['language']}.")
             
-            # Try to pair immediately
-            await pair_users()
-            
-            # Wait until this websocket is paired or times out
+            # Keep trying to pair until either paired or no possible matches remain
             while websocket not in conversation_mapping:
-                await asyncio.sleep(1)
-                # Check if this participant has waited too long
+                # Try to pair immediately
+                await pair_users()
+                
+                # If still not paired, check if there are any potential matches
                 current_time = datetime.now()
                 join_time = next((t for w, _, t in waiting_room if w == websocket), None)
-                if join_time and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
-                    print(f"[INFO] Participant {user_id} timed out waiting for a match.")
-                    await notify_prolific_overflow(user_id)
-                    await safe_close(websocket)
-                    return
+                
+                if join_time:
+                    # Check if there are any other users with the same language
+                    same_language_users = [
+                        w for w, lang, _ in waiting_room 
+                        if w != websocket and lang == user_languages[websocket]
+                    ]
+                    
+                    # If no potential matches and waited too long, then exit
+                    if not same_language_users and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
+                        print(f"[INFO] No potential matches for {user_id} after waiting.")
+                        await notify_prolific_overflow(user_id)
+                        await safe_close(websocket)
+                        return
+                
+                await asyncio.sleep(1)
             
             conversation_id = conversation_mapping.get(websocket)
             partner = active_users.get(websocket)
