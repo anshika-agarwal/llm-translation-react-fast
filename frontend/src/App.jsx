@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLanguage } from './LanguageContext';
 
 function App() {
+  const { getText, formatText } = useLanguage();
+
   // States for UI visibility and data
   const [isPaired, setIsPaired] = useState(false);
   const [conversationId, setConversationId] = useState(null);
@@ -287,60 +290,58 @@ function App() {
     <div className="app-container">
       <div className="app-content">
         <header className="app-header">
-          <h1>Translation Turing Test</h1>
+          <h1>{getText('title')}</h1>
           {conversationId && (
             <div className="conversation-id">ID: {conversationId}</div>
           )}
         </header>
 
-        {/* Add the consent page to the main render function, before the language selection */}
         {!hasConsented ? (
           <div className="consent-page">
             <div className="consent-content">
-              <h2>Research Study Consent Form</h2>
+              <h2>{getText('consentTitle')}</h2>
               
               <div className="consent-section">
-                <h3>Description</h3>
-                <p>You are invited to participate in a research study on the use of LLMs as translators and their effect on engagement and authenticity in conversation. You will be asked to chat anonymously with another user and answer survey questions about your chat experience.</p>
+                <h3>{getText('consentDescription')}</h3>
+                <p>{getText('consentDescriptionText')}</p>
               </div>
 
               <div className="consent-section">
-                <h3>Time Involvement</h3>
-                <p>Your participation will take approximately 5-7 minutes.</p>
+                <h3>{getText('consentTimeInvolvement')}</h3>
+                <p>{getText('consentTimeInvolvementText')}</p>
               </div>
 
               <div className="consent-section">
-                <h3>Risks and Benefits</h3>
-                <p>The risks associated with this study are none. Study data will be stored securely, in compliance with Stanford University standards, minimizing the risk of confidentiality breach.</p>
-                <p>The benefits which may reasonably be expected to result from this study are improved understanding of AI-assisted communication and translation. We cannot and do not guarantee or promise that you will receive any benefits from this study.</p>
+                <h3>{getText('consentRisks')}</h3>
+                <p>{getText('consentRisksText')}</p>
+                <p>{getText('consentBenefitsText')}</p>
               </div>
 
               <div className="consent-section">
-                <h3>Payments</h3>
-                <p>You will receive $2.75 as payment for your participation.</p>
+                <h3>{getText('consentPayment')}</h3>
+                <p>{getText('consentPaymentText')}</p>
               </div>
 
               <div className="consent-section">
-                <h3>Participant's Rights</h3>
-                <p>If you have read this form and have decided to participate in this project, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at any time without penalty or loss of benefits to which you are otherwise entitled.</p>
-                <p>The alternative is not to participate. You have the right to refuse to answer particular questions. The results of this research study may be presented at scientific or professional meetings or published in scientific journals. Your individual privacy will be maintained in all published and written data resulting from the study.</p>
+                <h3>{getText('consentRights')}</h3>
+                <p>{getText('consentRightsText')}</p>
+                <p>{getText('consentAlternativeText')}</p>
               </div>
 
               <button className="button-primary continue-btn" onClick={() => {
                 setHasConsented(true);
                 scrollToTop();
               }}>
-                Continue to Chat
+                {getText('continueButton')}
               </button>
             </div>
           </div>
         ) : (
-          // Existing language selection and chat components
           !isPaired && (
             <div className="language-selection">
               <div className="section-header">
-                <h2>Select Your Language</h2>
-                <p>Choose your native/most fluent language for the chat</p>
+                <h2>{getText('selectLanguageTitle')}</h2>
+                <p>{getText('selectLanguageSubtitle')}</p>
               </div>
 
               <div className="language-select">
@@ -348,7 +349,7 @@ function App() {
                   value={language} 
                   onChange={(e) => setLanguage(e.target.value)}
                 >
-                  <option value="" disabled>Select Language</option>
+                  <option value="" disabled>{getText('selectLanguagePrompt')}</option>
                   <option value="english">English</option>
                   <option value="spanish">Spanish</option>
                 </select>
@@ -356,27 +357,21 @@ function App() {
 
               <div className="rating-section">
                 <div className="rating-card">
-                  <p>How does LLM translation compare to human translators?</p>
+                  <p>{getText('llmComparisonQuestion')}</p>
                   <div className="radio-group">
-                    {[
-                      { value: "1", label: "Much worse" },
-                      { value: "2", label: "Slightly worse" },
-                      { value: "3", label: "About same" },
-                      { value: "4", label: "Slightly better" },
-                      { value: "5", label: "Much better" }
-                    ].map((option) => (
-                      <div key={option.value} className="radio-option">
+                    {Object.entries(getText('llmComparisonOptions')).map(([value, label]) => (
+                      <div key={value} className="radio-option">
                         <input
                           type="radio"
-                          id={`quality-${option.value}`}
+                          id={`quality-${value}`}
                           name="qualityRating"
-                          value={option.value}
-                          checked={qualityRating === option.value}
+                          value={value}
+                          checked={qualityRating === value}
                           onChange={(e) => setQualityRating(e.target.value)}
                         />
-                        <label className="radio-option-label" htmlFor={`quality-${option.value}`}>
-                          <span className="radio-value">{option.value}</span>
-                          <span className="radio-description">{option.label}</span>
+                        <label className="radio-option-label" htmlFor={`quality-${value}`}>
+                          <span className="radio-value">{value}</span>
+                          <span className="radio-description">{label}</span>
                         </label>
                       </div>
                     ))}
@@ -384,27 +379,21 @@ function App() {
                 </div>
 
                 <div className="rating-card">
-                  <p>How much do you agree with the following statement: LLM translations can facilitate seamless conversations between people speaking different languages?</p>
+                  <p>{getText('seamlessConversationQuestion')}</p>
                   <div className="radio-group">
-                    {[
-                      { value: "1", label: "Strongly disagree" },
-                      { value: "2", label: "Disagree" },
-                      { value: "3", label: "Neutral" },
-                      { value: "4", label: "Agree" },
-                      { value: "5", label: "Strongly agree" }
-                    ].map((option) => (
-                      <div key={option.value} className="radio-option">
+                    {Object.entries(getText('seamlessConversationOptions')).map(([value, label]) => (
+                      <div key={value} className="radio-option">
                         <input
                           type="radio"
-                          id={`seamless-${option.value}`}
+                          id={`seamless-${value}`}
                           name="seamlessRating"
-                          value={option.value}
-                          checked={seamlessRating === option.value}
+                          value={value}
+                          checked={seamlessRating === value}
                           onChange={(e) => setSeamlessRating(e.target.value)}
                         />
-                        <label className="radio-option-label" htmlFor={`seamless-${option.value}`}>
-                          <span className="radio-value">{option.value}</span>
-                          <span className="radio-description">{option.label}</span>
+                        <label className="radio-option-label" htmlFor={`seamless-${value}`}>
+                          <span className="radio-value">{value}</span>
+                          <span className="radio-description">{label}</span>
                         </label>
                       </div>
                     ))}
@@ -412,27 +401,21 @@ function App() {
                 </div>
 
                 <div className="rating-card">
-                  <p>How effective do you think LLMs are at avoiding the "translationese" problem (producing translations that sound unnatural or machine-like)?</p>
+                  <p>{getText('translationeseQuestion')}</p>
                   <div className="radio-group">
-                    {[
-                      { value: "1", label: "Very ineffective" },
-                      { value: "2", label: "Somewhat ineffective" },
-                      { value: "3", label: "Neutral" },
-                      { value: "4", label: "Somewhat effective" },
-                      { value: "5", label: "Very effective" }
-                    ].map((option) => (
-                      <div key={option.value} className="radio-option">
+                    {Object.entries(getText('translationeseOptions')).map(([value, label]) => (
+                      <div key={value} className="radio-option">
                         <input
                           type="radio"
-                          id={`translationese-${option.value}`}
+                          id={`translationese-${value}`}
                           name="translationeseRating"
-                          value={option.value}
-                          checked={translationeseRating === option.value}
+                          value={value}
+                          checked={translationeseRating === value}
                           onChange={(e) => setTranslationeseRating(e.target.value)}
                         />
-                        <label className="radio-option-label" htmlFor={`translationese-${option.value}`}>
-                          <span className="radio-value">{option.value}</span>
-                          <span className="radio-description">{option.label}</span>
+                        <label className="radio-option-label" htmlFor={`translationese-${value}`}>
+                          <span className="radio-value">{value}</span>
+                          <span className="radio-description">{label}</span>
                         </label>
                       </div>
                     ))}
@@ -441,7 +424,7 @@ function App() {
               </div>
 
               <button className="button-primary find-partner-btn" onClick={findPair}>
-                Find Chat Partner
+                {getText('findPartnerButton')}
               </button>
             </div>
           )
@@ -451,14 +434,14 @@ function App() {
         {showChat && (
           <div className="chat-section">
             <div className="chat-header">
-              <h2>Chat Room</h2>
+              <h2>{getText('chatRoomTitle')}</h2>
               <div className="timer">{timer}</div>
             </div>
 
             <div className="messages-container">
               {conversationStarter && (
                 <div className="conversation-starter">
-                  <p>Suggested conversation starter:</p>
+                  <p>{getText('conversationStarterLabel')}</p>
                   <p className="starter-question">{conversationStarter}</p>
                 </div>
               )}
@@ -475,16 +458,16 @@ function App() {
             <div className="chat-input">
               <input
                 type="text"
-                placeholder="Type your message..."
+                placeholder={getText('messagePlaceholder')}
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 onInput={sendTypingStatus}
               />
-              <button onClick={sendMessage}>Send</button>
+              <button onClick={sendMessage}>{getText('sendButton')}</button>
             </div>
 
             <button className="button-primary end-chat-btn" onClick={endChat}>
-              End Chat
+              {getText('endChatButton')}
             </button>
           </div>
         )}
@@ -492,31 +475,25 @@ function App() {
         {/* Survey Section */}
         {showSurvey && (
           <div className="survey-section">
-            <h2>Post-Survey</h2>
+            <h2>{getText('postSurveyTitle')}</h2>
             
             {/* Engagement Rating */}
             <div className="survey-question">
-              <h3>1. How would you rate your conversation on engagement?</h3>
+              <h3>{getText('engagementQuestion')}</h3>
               <div className="radio-group">
-                {[
-                  { value: "1", label: "Very unengaging" },
-                  { value: "2", label: "Somewhat unengaging" },
-                  { value: "3", label: "Neutral" },
-                  { value: "4", label: "Engaging" },
-                  { value: "5", label: "Very engaging" }
-                ].map((option) => (
-                  <div key={option.value} className="radio-option">
+                {Object.entries(getText('engagementOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
                     <input
                       type="radio"
-                      id={`engagement-${option.value}`}
+                      id={`engagement-${value}`}
                       name="engagementRating"
-                      value={option.value}
-                      checked={engagementRating === option.value}
+                      value={value}
+                      checked={engagementRating === value}
                       onChange={(e) => setEngagementRating(e.target.value)}
                     />
-                    <label className="radio-option-label" htmlFor={`engagement-${option.value}`}>
-                      <span className="radio-value">{option.value}</span>
-                      <span className="radio-description">{option.label}</span>
+                    <label className="radio-option-label" htmlFor={`engagement-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
                     </label>
                   </div>
                 ))}
@@ -525,27 +502,21 @@ function App() {
 
             {/* Friendliness Rating */}
             <div className="survey-question">
-              <h3>2. How would you rate your conversation on friendliness?</h3>
+              <h3>{getText('friendlinessQuestion')}</h3>
               <div className="radio-group">
-                {[
-                  { value: "1", label: "Very unfriendly" },
-                  { value: "2", label: "Somewhat unfriendly" },
-                  { value: "3", label: "Neutral" },
-                  { value: "4", label: "Friendly" },
-                  { value: "5", label: "Very friendly" }
-                ].map((option) => (
-                  <div key={option.value} className="radio-option">
+                {Object.entries(getText('friendlinessOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
                     <input
                       type="radio"
-                      id={`friendliness-${option.value}`}
+                      id={`friendliness-${value}`}
                       name="friendlinessRating"
-                      value={option.value}
-                      checked={friendlinessRating === option.value}
+                      value={value}
+                      checked={friendlinessRating === value}
                       onChange={(e) => setFriendlinessRating(e.target.value)}
                     />
-                    <label className="radio-option-label" htmlFor={`friendliness-${option.value}`}>
-                      <span className="radio-value">{option.value}</span>
-                      <span className="radio-description">{option.label}</span>
+                    <label className="radio-option-label" htmlFor={`friendliness-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
                     </label>
                   </div>
                 ))}
@@ -554,27 +525,21 @@ function App() {
 
             {/* Overall Quality Rating */}
             <div className="survey-question">
-              <h3>3. How would you rate the conversation quality overall?</h3>
+              <h3>{getText('overallQuestion')}</h3>
               <div className="radio-group">
-                {[
-                  { value: "1", label: "Very bad" },
-                  { value: "2", label: "Bad" },
-                  { value: "3", label: "Neutral" },
-                  { value: "4", label: "Good" },
-                  { value: "5", label: "Very good" }
-                ].map((option) => (
-                  <div key={option.value} className="radio-option">
+                {Object.entries(getText('overallOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
                     <input
                       type="radio"
-                      id={`quality-${option.value}`}
+                      id={`quality-${value}`}
                       name="overallRating"
-                      value={option.value}
-                      checked={overallRating === option.value}
+                      value={value}
+                      checked={overallRating === value}
                       onChange={(e) => setOverallRating(e.target.value)}
                     />
-                    <label className="radio-option-label" htmlFor={`quality-${option.value}`}>
-                      <span className="radio-value">{option.value}</span>
-                      <span className="radio-description">{option.label}</span>
+                    <label className="radio-option-label" htmlFor={`quality-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
                     </label>
                   </div>
                 ))}
@@ -583,7 +548,7 @@ function App() {
 
             {/* Continue Conversation */}
             <div className="survey-question">
-              <h3>4. Do you want to continue conversing with this individual?</h3>
+              <h3>{getText('continueQuestion')}</h3>
               <div className="binary-radio-group">
                 <div className="binary-radio-option">
                   <input
@@ -594,7 +559,7 @@ function App() {
                     checked={continueChat === "yes"}
                     onChange={(e) => setContinueChat(e.target.value)}
                   />
-                  <label className="binary-radio-label" htmlFor="continue-yes">Yes</label>
+                  <label className="binary-radio-label" htmlFor="continue-yes">{getText('yesOption')}</label>
                 </div>
                 <div className="binary-radio-option">
                   <input
@@ -605,14 +570,14 @@ function App() {
                     checked={continueChat === "no"}
                     onChange={(e) => setContinueChat(e.target.value)}
                   />
-                  <label className="binary-radio-label" htmlFor="continue-no">No</label>
+                  <label className="binary-radio-label" htmlFor="continue-no">{getText('noOption')}</label>
                 </div>
               </div>
             </div>
 
             {/* Chat Partner Type */}
             <div className="survey-question">
-              <h3>5. Do you think you were chatting with a real person or AI bot?</h3>
+              <h3>{getText('chatPartnerQuestion')}</h3>
               <div className="binary-radio-group">
                 <div className="binary-radio-option">
                   <input
@@ -623,7 +588,7 @@ function App() {
                     checked={chatPartnerType === "real"}
                     onChange={(e) => setChatPartnerType(e.target.value)}
                   />
-                  <label className="binary-radio-label" htmlFor="partner-real">Real person</label>
+                  <label className="binary-radio-label" htmlFor="partner-real">{getText('realPersonOption')}</label>
                 </div>
                 <div className="binary-radio-option">
                   <input
@@ -634,18 +599,18 @@ function App() {
                     checked={chatPartnerType === "ai"}
                     onChange={(e) => setChatPartnerType(e.target.value)}
                   />
-                  <label className="binary-radio-label" htmlFor="partner-ai">AI bot</label>
+                  <label className="binary-radio-label" htmlFor="partner-ai">{getText('aiBotOption')}</label>
                 </div>
               </div>
             </div>
 
             {/* Reasoning */}
             <div className="survey-question">
-              <h3>6. Why did you believe your chat was a {chatPartnerType === "real" ? "real person" : "AI bot"}?</h3>
+              <h3>{formatText('reasoningQuestion', chatPartnerType === "real" ? getText('realPersonOption').toLowerCase() : getText('aiBotOption').toLowerCase())}</h3>
               <textarea
                 value={chatReasoningText}
                 onChange={(e) => setChatReasoningText(e.target.value)}
-                placeholder="Please explain your reasoning..."
+                placeholder={getText('reasoningPlaceholder')}
                 rows="4"
               />
             </div>
@@ -654,7 +619,7 @@ function App() {
             {chatPartnerType === "real" && (
               <>
                 <div className="survey-question">
-                  <h3>7. Do you think you were chatting with a native speaker of the language you chose?</h3>
+                  <h3>{getText('nativeSpeakerQuestion')}</h3>
                   <div className="binary-radio-group">
                     <div className="binary-radio-option">
                       <input
@@ -665,7 +630,7 @@ function App() {
                         checked={isNativeSpeaker === "yes"}
                         onChange={(e) => setIsNativeSpeaker(e.target.value)}
                       />
-                      <label className="binary-radio-label" htmlFor="native-yes">Yes</label>
+                      <label className="binary-radio-label" htmlFor="native-yes">{getText('yesOption')}</label>
                     </div>
                     <div className="binary-radio-option">
                       <input
@@ -676,17 +641,17 @@ function App() {
                         checked={isNativeSpeaker === "no"}
                         onChange={(e) => setIsNativeSpeaker(e.target.value)}
                       />
-                      <label className="binary-radio-label" htmlFor="native-no">No</label>
+                      <label className="binary-radio-label" htmlFor="native-no">{getText('noOption')}</label>
                     </div>
                   </div>
                 </div>
 
                 <div className="survey-question">
-                  <h3>8. Why did you believe your chat was a {isNativeSpeaker === "yes" ? "native" : "non-native"} speaker?</h3>
+                  <h3>{formatText('nativeSpeakerReasonQuestion', isNativeSpeaker === "yes" ? getText('nativeOption') : getText('nonNativeOption'))}</h3>
                   <textarea
                     value={nativeSpeakerReason}
                     onChange={(e) => setNativeSpeakerReason(e.target.value)}
-                    placeholder="Please explain your reasoning..."
+                    placeholder={getText('reasoningPlaceholder')}
                     rows="4"
                   />
                 </div>
@@ -694,7 +659,7 @@ function App() {
             )}
 
             <button className="button-primary submit-survey-btn" onClick={submitSurvey}>
-              Submit Survey
+              {getText('submitSurveyButton')}
             </button>
           </div>
         )}
@@ -704,12 +669,12 @@ function App() {
           <div className="popup-overlay">
             <div className="popup-content">
               <div className="loading-spinner"></div>
-              <h2 className="popup-title">Looking for a Chat Partner</h2>
+              <h2 className="popup-title">{getText('waitingTitle')}</h2>
               <div className="popup-wait-time">
-                Wait time: {formatTime(elapsedTime)}
+                {getText('waitTimeLabel')} {formatTime(elapsedTime)}
               </div>
               <p className="popup-description">
-                We're working to pair you with a suitable chat partner. Most users are matched within 1-2 minutes. If you're not paired after this time, you may want to try again later when more users are active.
+                {getText('waitingDescription')}
               </p>
             </div>
           </div>
