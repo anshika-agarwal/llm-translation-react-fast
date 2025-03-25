@@ -15,8 +15,6 @@ const translations = {
       "What would constitute a \"perfect\" day for you?",
       "What do you value most in a friendship?",
       "How do you feel about your relationship with your mother?",
-      "What is your most treasured memory?",
-      "What is your favorite way to spend a weekend?"
     ],
     
     // Language Selection
@@ -124,7 +122,7 @@ const translations = {
     reasoningQuestion: "6. Why did you believe your chat was a {0}?",
     reasoningPlaceholder: "Please explain your reasoning...",
     
-    nativeSpeakerQuestion: "7. Do you think you were chatting with a native speaker of the language you chose?",
+    nativeSpeakerQuestion: "7. Do you think you were chatting with a native speaker of the same language?",
     nativeSpeakerReasonQuestion: "8. Why did you believe your chat was a {0} speaker?",
     nativeOption: "native",
     nonNativeOption: "non-native",
@@ -150,8 +148,6 @@ const translations = {
       "¿Qué constituiría un día \"perfecto\" para ti?",
       "¿Qué es lo que más valoras en una amistad?",
       "¿Cómo te sientes acerca de tu relación con tu madre?",
-      "¿Cuál es tu recuerdo más preciado?",
-      "¿Cuál es tu forma favorita de pasar un fin de semana?"
     ],
     
     // Language Selection
@@ -259,7 +255,7 @@ const translations = {
     reasoningQuestion: "6. ¿Por qué creíste que tu chat era {0}?",
     reasoningPlaceholder: "Por favor explica tu razonamiento...",
     
-    nativeSpeakerQuestion: "7. ¿Crees que estabas chateando con un hablante nativo del idioma que elegiste?",
+    nativeSpeakerQuestion: "7. ¿Crees que estabas chateando con un hablante nativo del mismo idioma?",
     nativeSpeakerReasonQuestion: "8. ¿Por qué creíste que tu chat era un hablante {0}?",
     nativeOption: "nativo",
     nonNativeOption: "no nativo",

@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 import aiohttp
 from typing import Dict, List, Tuple, Optional
 import random
+from pathlib import Path
 
 # Load environment variables and initialize FastAPI app
 load_dotenv()
@@ -56,22 +57,37 @@ CONTROL_PAIRS = [
     ("spanish", "spanish")
 ]
 
-CONVERSATION_STARTERS = {
-    "english": [
-        "What would constitute a \"perfect\" day for you?",
-        "What do you value most in a friendship?",
-        "How do you feel about your relationship with your mother?",
-        "What is your most treasured memory?",
-        "What is your favorite way to spend a weekend?"
-    ],
-    "spanish": [
-        "¿Qué constituiría un día \"perfecto\" para ti?",
-        "¿Qué es lo que más valoras en una amistad?",
-        "¿Cómo te sientes acerca de tu relación con tu madre?",
-        "¿Cuál es tu recuerdo más preciado?",
-        "¿Cuál es tu forma favorita de pasar un fin de semana?"
-    ]
-}
+# Import translations from frontend
+import json
+import sys
+from pathlib import Path
+
+# Get the frontend translations file path
+frontend_dir = Path(__file__).parent.parent / 'frontend' / 'src' / 'translations.js'
+
+def get_translations():
+    """Read and parse the translations file from frontend."""
+    try:
+        with open(frontend_dir, 'r', encoding='utf-8') as f:
+            content = f.read()
+            # Remove 'export default' and convert to valid JSON
+            content = content.replace('export default', '')
+            content = content.replace('const translations =', '')
+            content = content.strip().rstrip(';')
+            return json.loads(content)
+    except Exception as e:
+        print(f"[ERROR] Failed to load translations: {e}")
+        return None
+
+# Load translations
+translations = get_translations()
+
+def get_conversation_starter(language):
+    """Get a random conversation starter in the specified language."""
+    if not translations or language.lower() not in translations:
+        return None
+    starters = translations[language.lower()].get('conversationStarters', [])
+    return random.choice(starters) if starters else None
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
@@ -344,7 +360,10 @@ async def pair_users():
             
             # Select a random conversation starter in the user's language
             user_lang = user_languages[websocket].lower()
-            convo_starter = random.choice(CONVERSATION_STARTERS.get(user_lang, CONVERSATION_STARTERS["english"]))
+            convo_starter = get_conversation_starter(user_lang)
+            if not convo_starter:
+                print(f"[WARNING] Could not find conversation starter for language {user_lang}")
+                convo_starter = get_conversation_starter('english')  # fallback to English
             
             try:
                 conn = get_db_connection()
