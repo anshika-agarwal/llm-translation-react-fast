@@ -216,25 +216,56 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
                              if w not in (websocket, waiting_ws)]
             return waiting_ws
     
-    # If no priority match, check for control group matches
-    for waiting_ws, waiting_lang, join_time in waiting_room:
-        if waiting_ws != websocket and (language, waiting_lang) in CONTROL_PAIRS:
-            # Check if either participant has waited too long
-            wait_time = (current_time - join_time).total_seconds()
-            if wait_time >= MAX_WAIT_TIME:
-                # Remove the matched pair from waiting room immediately
-                waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
-                                 if w not in (websocket, waiting_ws)]
-                return waiting_ws
+    # Check if this user has waited too long
+    user_join_time = next((t for w, _, t in waiting_room if w == websocket), None)
+    if user_join_time and (current_time - user_join_time).total_seconds() >= MAX_WAIT_TIME:
+        # If user has waited too long, try to match with the oldest waiting user of same language
+        same_language_users = [(w, t) for w, l, t in waiting_room 
+                             if w != websocket and l == language]
+        if same_language_users:
+            # Sort by join time and get the oldest waiting user
+            oldest_waiting = min(same_language_users, key=lambda x: x[1])
+            waiting_ws = oldest_waiting[0]
+            # Remove the matched pair from waiting room immediately
+            waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
+                             if w not in (websocket, waiting_ws)]
+            return waiting_ws
     
     return None
 
 async def cleanup_waiting_room():
-    """Remove participants who have waited too long."""
+    """Remove participants who have waited too long and try to pair them with same-language users."""
     current_time = datetime.now()
     global waiting_room
     
-    # Find participants who have waited too long
+    # Sort waiting room by join time to ensure FIFO order
+    waiting_room.sort(key=lambda x: x[2])
+    
+    # Group users by language
+    english_users = [(ws, join_time) for ws, lang, join_time in waiting_room if lang == "english"]
+    spanish_users = [(ws, join_time) for ws, lang, join_time in waiting_room if lang == "spanish"]
+    
+    # Try to pair expired users with same language
+    for users in [english_users, spanish_users]:
+        i = 0
+        while i < len(users):
+            ws, join_time = users[i]
+            wait_time = (current_time - join_time).total_seconds()
+            
+            if wait_time >= MAX_WAIT_TIME and i + 1 < len(users):
+                # Pair with next user in same language group
+                partner_ws = users[i + 1][0]
+                # Remove both users from waiting room
+                waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
+                                 if w not in (ws, partner_ws)]
+                # Set up the pair
+                active_users[ws] = partner_ws
+                active_users[partner_ws] = ws
+                i += 2  # Skip both paired users
+            else:
+                i += 1
+    
+    # Handle remaining expired users
     expired_participants = [
         (ws, lang) for ws, lang, join_time in waiting_room 
         if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME
