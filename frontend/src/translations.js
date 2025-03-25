@@ -3,6 +3,22 @@ const translations = {
     // Header
     title: "Translation Turing Test",
     
+    // System Messages
+    thankYouMessage: "Thank you for your feedback! You will be redirected to the start page.",
+    noPartnerFoundMessage: "Could not find a chat partner. Try again later!",
+    connectionLostMessage: "Connection to the server has been lost. Your survey cannot be submitted.",
+    fillAllFieldsMessage: "Please answer all the survey questions before submitting.",
+    serverErrorMessage: "Failed to connect to chat server. Please try again.",
+    
+    // Conversation Starters
+    conversationStarters: [
+      "What would constitute a \"perfect\" day for you?",
+      "What do you value most in a friendship?",
+      "How do you feel about your relationship with your mother?",
+      "What is your most treasured memory?",
+      "What is your favorite way to spend a weekend?"
+    ],
+    
     // Language Selection
     selectLanguageTitle: "Select Your Language",
     selectLanguageSubtitle: "Choose your native/most fluent language for the chat",
@@ -115,9 +131,6 @@ const translations = {
     
     // Messages
     surveySubmittedMessage: "Thank you for your feedback! You will be redirected to the start page.",
-    fillAllFieldsMessage: "Please answer all the survey questions before submitting.",
-    connectionLostMessage: "Connection to the server has been lost. Your survey cannot be submitted.",
-    noPartnerMessage: "Could not find a chat partner. Try again later!",
     fillPresurveyMessage: "Please fill in all fields before finding a chat partner"
   },
   
@@ -125,18 +138,34 @@ const translations = {
     // Header
     title: "Prueba de Turing de Traducción",
     
+    // System Messages
+    thankYouMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de inicio.",
+    noPartnerFoundMessage: "No se pudo encontrar un compañero de chat. ¡Inténtalo más tarde!",
+    connectionLostMessage: "Se ha perdido la conexión con el servidor. Tu encuesta no puede ser enviada.",
+    fillAllFieldsMessage: "Por favor responde todas las preguntas de la encuesta antes de enviar.",
+    serverErrorMessage: "Error al conectar con el servidor de chat. Por favor, inténtalo de nuevo.",
+    
+    // Conversation Starters
+    conversationStarters: [
+      "¿Qué constituiría un día \"perfecto\" para ti?",
+      "¿Qué es lo que más valoras en una amistad?",
+      "¿Cómo te sientes acerca de tu relación con tu madre?",
+      "¿Cuál es tu recuerdo más preciado?",
+      "¿Cuál es tu forma favorita de pasar un fin de semana?"
+    ],
+    
     // Language Selection
     selectLanguageTitle: "Seleccione su Idioma",
     selectLanguageSubtitle: "Elija su idioma nativo/más fluido para el chat",
     selectLanguagePrompt: "Seleccionar Idioma",
     
     // Pre-survey Questions
-    llmComparisonQuestion: "¿Cómo se compara la traducción LLM con los traductores humanos?",
+    llmComparisonQuestion: "¿Cómo se compara la traducción de LLM con los traductores humanos?",
     llmComparisonOptions: {
       "1": "Mucho peor",
-      "2": "Ligeramente peor",
-      "3": "Aproximadamente igual",
-      "4": "Ligeramente mejor",
+      "2": "Algo peor",
+      "3": "Igual",
+      "4": "Algo mejor",
       "5": "Mucho mejor"
     },
     
@@ -237,9 +266,6 @@ const translations = {
     
     // Messages
     surveySubmittedMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de inicio.",
-    fillAllFieldsMessage: "Por favor responde todas las preguntas de la encuesta antes de enviar.",
-    connectionLostMessage: "Se ha perdido la conexión con el servidor. Tu encuesta no puede ser enviada.",
-    noPartnerMessage: "No se pudo encontrar un compañero de chat. ¡Inténtalo más tarde!",
     fillPresurveyMessage: "Por favor completa todos los campos antes de buscar un compañero de chat"
   }
 };

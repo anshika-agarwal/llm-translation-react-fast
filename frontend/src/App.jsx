@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from './LanguageContext';
 
 function App() {
-  const { getText, formatText } = useLanguage();
+  const { getText, formatText, displayLanguage } = useLanguage();
 
   // States for UI visibility and data
   const [isPaired, setIsPaired] = useState(false);
@@ -13,8 +13,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [timer, setTimer] = useState("3:00");
 
-  // States for language selection and presurvey
-  const [language, setLanguage] = useState("");
+  // States for presurvey
   const [qualityRating, setQualityRating] = useState("");
   const [seamlessRating, setSeamlessRating] = useState("");
   const [translationeseRating, setTranslationeseRating] = useState("");  
@@ -75,7 +74,6 @@ function App() {
       setShowChat(false);
       setShowSurvey(false);
       setMessages([]);
-      setLanguage("");
       setQualityRating("");
       setSeamlessRating("");
       setTranslationeseRating("");
@@ -118,8 +116,8 @@ function App() {
   const findPair = async () => {
     setIsWaiting(true);
     setWaitStartTime(Date.now());
-    if (!language || !qualityRating || !seamlessRating || !translationeseRating) {
-      alert("Please fill in all fields before finding a chat partner");
+    if (!qualityRating || !seamlessRating || !translationeseRating) {
+      alert(getText('fillPresurveyMessage'));
       return;
     }
     
@@ -134,11 +132,11 @@ function App() {
         console.log("WebSocket connection opened successfully");
         const data = {
           type: "language",
-          language: language,
+          language: displayLanguage,
           qualityRating: qualityRating,
           seamlessRating: seamlessRating,
           translationeseRating: translationeseRating,
-          prolific_pid: prolificPid  // Add the Prolific ID if available
+          prolific_pid: prolificPid
         };
         console.log("Sending initial data:", data);
         ws.send(JSON.stringify(data));
@@ -151,7 +149,6 @@ function App() {
           setShowChat(true);
           setShowChatPartnerPopup(false);
           setConversationId(data.conversation_id);
-          // Use the conversation starter from the backend
           setConversationStarter(data.convo_starter);
           console.log(data.message);
         } else if (data.type === "timer") {
@@ -168,19 +165,18 @@ function App() {
           setConversationId(data.conversation_id);
           console.log(data.message);
         } else if (data.type === "surveyReceived") {
-          // Keep the connection open but hide the survey UI
           setShowSurvey(false);
           setSurveyCompleted(true);
-          alert("Thank you for your feedback! You will be redirected to the start page.");
+          alert(getText('thankYouMessage'));
         } else if (data.type === "waitingRoomTimeout") {
-          alert("Could not find a chat partner. Try again later!");
+          alert(getText('noPartnerFoundMessage'));
           setShowChatPartnerPopup(false);
         }
       };
 
       ws.onerror = (error) => {
         console.error("WebSocket Error:", error);
-        alert("Failed to connect to chat server. Please try again.");
+        alert(getText('serverErrorMessage'));
         setShowChatPartnerPopup(false);
       };
 
@@ -337,88 +333,70 @@ function App() {
             </div>
           </div>
         ) : !isPaired && (
-          <div className="language-selection">
-            <div className="section-header">
-              <h2>{getText('selectLanguageTitle')}</h2>
-              <p>{getText('selectLanguageSubtitle')}</p>
+          <div className="rating-section">
+            <div className="rating-card">
+              <p>{getText('llmComparisonQuestion')}</p>
+              <div className="radio-group">
+                {Object.entries(getText('llmComparisonOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`quality-${value}`}
+                      name="qualityRating"
+                      value={value}
+                      checked={qualityRating === value}
+                      onChange={(e) => setQualityRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`quality-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="language-select">
-              <select 
-                value={language} 
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                <option value="" disabled>{getText('selectLanguagePrompt')}</option>
-                <option value="english">English</option>
-                <option value="spanish">Spanish</option>
-              </select>
+            <div className="rating-card">
+              <p>{getText('seamlessConversationQuestion')}</p>
+              <div className="radio-group">
+                {Object.entries(getText('seamlessConversationOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`seamless-${value}`}
+                      name="seamlessRating"
+                      value={value}
+                      checked={seamlessRating === value}
+                      onChange={(e) => setSeamlessRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`seamless-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="rating-section">
-              <div className="rating-card">
-                <p>{getText('llmComparisonQuestion')}</p>
-                <div className="radio-group">
-                  {Object.entries(getText('llmComparisonOptions')).map(([value, label]) => (
-                    <div key={value} className="radio-option">
-                      <input
-                        type="radio"
-                        id={`quality-${value}`}
-                        name="qualityRating"
-                        value={value}
-                        checked={qualityRating === value}
-                        onChange={(e) => setQualityRating(e.target.value)}
-                      />
-                      <label className="radio-option-label" htmlFor={`quality-${value}`}>
-                        <span className="radio-value">{value}</span>
-                        <span className="radio-description">{label}</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rating-card">
-                <p>{getText('seamlessConversationQuestion')}</p>
-                <div className="radio-group">
-                  {Object.entries(getText('seamlessConversationOptions')).map(([value, label]) => (
-                    <div key={value} className="radio-option">
-                      <input
-                        type="radio"
-                        id={`seamless-${value}`}
-                        name="seamlessRating"
-                        value={value}
-                        checked={seamlessRating === value}
-                        onChange={(e) => setSeamlessRating(e.target.value)}
-                      />
-                      <label className="radio-option-label" htmlFor={`seamless-${value}`}>
-                        <span className="radio-value">{value}</span>
-                        <span className="radio-description">{label}</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rating-card">
-                <p>{getText('translationeseQuestion')}</p>
-                <div className="radio-group">
-                  {Object.entries(getText('translationeseOptions')).map(([value, label]) => (
-                    <div key={value} className="radio-option">
-                      <input
-                        type="radio"
-                        id={`translationese-${value}`}
-                        name="translationeseRating"
-                        value={value}
-                        checked={translationeseRating === value}
-                        onChange={(e) => setTranslationeseRating(e.target.value)}
-                      />
-                      <label className="radio-option-label" htmlFor={`translationese-${value}`}>
-                        <span className="radio-value">{value}</span>
-                        <span className="radio-description">{label}</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
+            <div className="rating-card">
+              <p>{getText('translationeseQuestion')}</p>
+              <div className="radio-group">
+                {Object.entries(getText('translationeseOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`translationese-${value}`}
+                      name="translationeseRating"
+                      value={value}
+                      checked={translationeseRating === value}
+                      onChange={(e) => setTranslationeseRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`translationese-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 

@@ -55,11 +55,23 @@ CONTROL_PAIRS = [
     ("english", "english"),
     ("spanish", "spanish")
 ]
-CONVERSATION_STARTERS = [
-    "What would constitute a \"perfect\" day for you?",
-    "What do you value most in a friendship?",
-    "How do you feel about your relationship with your mother?"
-]
+
+CONVERSATION_STARTERS = {
+    "english": [
+        "What would constitute a \"perfect\" day for you?",
+        "What do you value most in a friendship?",
+        "How do you feel about your relationship with your mother?",
+        "What is your most treasured memory?",
+        "What is your favorite way to spend a weekend?"
+    ],
+    "spanish": [
+        "¿Qué constituiría un día \"perfecto\" para ti?",
+        "¿Qué es lo que más valoras en una amistad?",
+        "¿Cómo te sientes acerca de tu relación con tu madre?",
+        "¿Cuál es tu recuerdo más preciado?",
+        "¿Cuál es tu forma favorita de pasar un fin de semana?"
+    ]
+}
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
@@ -330,8 +342,9 @@ async def pair_users():
             user1_id = websocket_to_uuid.get(websocket)
             user2_id = websocket_to_uuid.get(match)
             
-            # Select a random conversation starter
-            convo_starter = CONVERSATION_STARTERS[random.randint(0, len(CONVERSATION_STARTERS) - 1)]
+            # Select a random conversation starter in the user's language
+            user_lang = user_languages[websocket].lower()
+            convo_starter = random.choice(CONVERSATION_STARTERS.get(user_lang, CONVERSATION_STARTERS["english"]))
             
             try:
                 conn = get_db_connection()
