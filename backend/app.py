@@ -459,10 +459,25 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
 
 async def handle_survey_submission(conn, conversation_id, sender, message, survey_submitted):
     """Handle survey submission and database updates."""
-    primary_column = "user1_postsurvey" if sender == user1 else "user2_postsurvey"
-    secondary_column = "user2_postsurvey" if primary_column == "user1_postsurvey" else "user1_postsurvey"
-    
     try:
+        # First determine which user (1 or 2) the sender is for this conversation
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT user1_id, user2_id
+                FROM conversations
+                WHERE conversation_id = %s
+            """, (conversation_id,))
+            result = cursor.fetchone()
+            if not result:
+                print(f"[ERROR] Could not find conversation {conversation_id}")
+                return
+            user1_id, user2_id = result
+            
+        # Determine if sender is user1 or user2
+        sender_uuid = websocket_to_uuid.get(sender)
+        is_user1 = sender_uuid == user1_id
+        
+        # Now check existing survey submissions
         with conn.cursor() as cursor:
             cursor.execute("""
                 SELECT user1_postsurvey, user2_postsurvey
@@ -470,14 +485,15 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
                 WHERE conversation_id = %s
             """, (conversation_id,))
             result = cursor.fetchone()
-        user1_postsurvey, user2_postsurvey = result if result else (None, None)
+            user1_postsurvey, user2_postsurvey = result if result else (None, None)
         
-        if not (user1_postsurvey if primary_column == "user1_postsurvey" else user2_postsurvey):
-            column = primary_column
-        elif not (user2_postsurvey if primary_column == "user1_postsurvey" else user1_postsurvey):
-            column = secondary_column
+        # Determine which column to update
+        if is_user1 and not user1_postsurvey:
+            column = "user1_postsurvey"
+        elif not is_user1 and not user2_postsurvey:
+            column = "user2_postsurvey"
         else:
-            print(f"[WARNING] Both survey columns are filled for conversation {conversation_id}.")
+            print(f"[WARNING] Survey already submitted for this user in conversation {conversation_id}.")
             return
             
         with conn.cursor() as cursor:
@@ -487,7 +503,7 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
                 WHERE conversation_id = %s
             """, (Json(message), conversation_id))
             conn.commit()
-        print(f"[INFO] Stored survey for user {websocket_to_uuid.get(sender)} in conversation {conversation_id}.")
+        print(f"[INFO] Stored survey for user {sender_uuid} in conversation {conversation_id}.")
         survey_submitted[sender] = True
         
         await sender.send_text(json.dumps({
@@ -534,9 +550,6 @@ async def root():
 async def websocket_endpoint(websocket: WebSocket):
     print(f"[INFO] New WebSocket connection attempt from {websocket.client}.")
     await websocket.accept()
-    user_id = str(uuid.uuid4())
-    websocket_to_uuid[websocket] = user_id
-    print(f"[INFO] Assigned UUID {user_id} to WebSocket.")
     
     try:
         # Expect an initial message with language and presurvey data
@@ -545,6 +558,12 @@ async def websocket_endpoint(websocket: WebSocket):
             return
         data = json.loads(message)
         if data["type"] == "language":
+            # Try to get PROLIFIC_PID from the data
+            prolific_pid = data.get("prolific_pid")
+            user_id = prolific_pid if prolific_pid else str(uuid.uuid4())
+            websocket_to_uuid[websocket] = user_id
+            print(f"[INFO] Assigned {'Prolific' if prolific_pid else 'Generated'} ID {user_id} to WebSocket.")
+            
             user_languages[websocket] = data["language"]
             user_presurveys[websocket] = {
                 "qualityRating": data.get("qualityRating"),
@@ -592,7 +611,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.close(code=1011)
                 
     except WebSocketDisconnect:
-        print(f"[INFO] WebSocket {user_id} disconnected.")
+        print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} disconnected.")
     except Exception as e:
         print(f"[ERROR] Exception in WebSocket endpoint: {e}")
     finally:

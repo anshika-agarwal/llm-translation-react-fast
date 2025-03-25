@@ -49,6 +49,9 @@ function App() {
   const [waitStartTime, setWaitStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
+  // Add this near the top with other state declarations
+  const [prolificPid, setProlificPid] = useState(null);
+
   // Function to scroll to top
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -97,6 +100,17 @@ function App() {
     return () => clearInterval(intervalId);
   }, [waitStartTime, isWaiting]);
 
+  // Add this effect after other useEffect declarations
+  useEffect(() => {
+    // Extract PROLIFIC_PID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const pid = urlParams.get('PROLIFIC_PID');
+    if (pid) {
+      setProlificPid(pid);
+      console.log("Found Prolific ID:", pid);
+    }
+  }, []);
+
   // Function to initiate a chat (creates a WebSocket connection)
   const findPair = async () => {
     setIsWaiting(true);
@@ -121,6 +135,7 @@ function App() {
           qualityRating: qualityRating,
           seamlessRating: seamlessRating,
           translationeseRating: translationeseRating,
+          prolific_pid: prolificPid  // Add the Prolific ID if available
         };
         console.log("Sending initial data:", data);
         ws.send(JSON.stringify(data));
