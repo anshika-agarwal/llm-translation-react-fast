@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 function App() {
   // States for UI visibility and data
@@ -44,6 +44,11 @@ function App() {
   // Add this near the top with other state declarations
   const [conversationStarter, setConversationStarter] = useState("");
 
+  // Add new state for waiting
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [waitStartTime, setWaitStartTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
   // Function to scroll to top
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -81,8 +86,21 @@ function App() {
     }
   }, [surveyCompleted]);
 
+  useEffect(() => {
+    let intervalId;
+    if (waitStartTime && isWaiting) {
+      intervalId = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - waitStartTime) / 1000);
+        setElapsedTime(elapsed);
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [waitStartTime, isWaiting]);
+
   // Function to initiate a chat (creates a WebSocket connection)
-  const findPair = () => {
+  const findPair = async () => {
+    setIsWaiting(true);
+    setWaitStartTime(Date.now());
     if (!language || !qualityRating || !seamlessRating || !translationeseRating) {
       alert("Please fill in all fields before finding a chat partner");
       return;
@@ -242,6 +260,12 @@ function App() {
     console.log("Submitting survey data:", surveyData);
     socketRef.current.send(JSON.stringify(surveyData));
     // Note: We no longer close the survey here - we wait for the surveyReceived message
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -665,7 +689,13 @@ function App() {
           <div className="popup-overlay">
             <div className="popup-content">
               <div className="loading-spinner"></div>
-              <p>Looking for a chat partner...</p>
+              <h2 className="popup-title">Looking for a Chat Partner</h2>
+              <div className="popup-wait-time">
+                Wait time: {formatTime(elapsedTime)}
+              </div>
+              <p className="popup-description">
+                We're working to pair you with a suitable chat partner. Most users are matched within 1-2 minutes. If you're not paired after this time, you may want to try again later when more users are active.
+              </p>
             </div>
           </div>
         )}
