@@ -37,9 +37,6 @@ function App() {
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
-  // Add new state for consent
-  const [hasConsented, setHasConsented] = useState(false);
-
   // Add state for completed survey
   const [surveyCompleted, setSurveyCompleted] = useState(false);
 
@@ -61,15 +58,14 @@ function App() {
 
   // Effect to scroll to top when sections change
   React.useEffect(() => {
-    if (showChat || showSurvey || !hasConsented || isPaired) {
+    if (showChat || showSurvey || isPaired) {
       scrollToTop();
     }
-  }, [showChat, showSurvey, hasConsented, isPaired]);
+  }, [showChat, showSurvey, isPaired]);
 
   // Effect to reset states when survey is completed
   React.useEffect(() => {
     if (surveyCompleted) {
-      setHasConsented(false);
       setIsPaired(false);
       setShowChat(false);
       setShowSurvey(false);
@@ -296,47 +292,7 @@ function App() {
           )}
         </header>
 
-        {!hasConsented ? (
-          <div className="consent-page">
-            <div className="consent-content">
-              <h2>{getText('consentTitle')}</h2>
-              
-              <div className="consent-section">
-                <h3>{getText('consentDescription')}</h3>
-                <p>{getText('consentDescriptionText')}</p>
-              </div>
-
-              <div className="consent-section">
-                <h3>{getText('consentTimeInvolvement')}</h3>
-                <p>{getText('consentTimeInvolvementText')}</p>
-              </div>
-
-              <div className="consent-section">
-                <h3>{getText('consentRisks')}</h3>
-                <p>{getText('consentRisksText')}</p>
-                <p>{getText('consentBenefitsText')}</p>
-              </div>
-
-              <div className="consent-section">
-                <h3>{getText('consentPayment')}</h3>
-                <p>{getText('consentPaymentText')}</p>
-              </div>
-
-              <div className="consent-section">
-                <h3>{getText('consentRights')}</h3>
-                <p>{getText('consentRightsText')}</p>
-                <p>{getText('consentAlternativeText')}</p>
-              </div>
-
-              <button className="button-primary continue-btn" onClick={() => {
-                setHasConsented(true);
-                scrollToTop();
-              }}>
-                {getText('continueButton')}
-              </button>
-            </div>
-          </div>
-        ) : !isPaired && (
+        {!isPaired && (
           <div className="rating-section">
             <div className="rating-card">
               <p>{getText('llmComparisonQuestion')}</p>

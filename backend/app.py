@@ -136,7 +136,7 @@ def remove_user_from_active(user: WebSocket):
     websocket_to_uuid.pop(user, None)
     websocket_locks.pop(user, None)
     
-    print(f"[INFO] Cleaned up all data for user {websocket_to_uuid.get(user, 'unknown')}")
+    print(f"[INFO] Cleaned up all data for user {user}")
 
 async def translate_message(message: str, source_language: str, target_language: str) -> str:
     """

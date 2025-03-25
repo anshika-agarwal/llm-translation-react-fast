@@ -43,24 +43,8 @@ const translations = {
       "5": "Very effective"
     },
     
-    // Consent Form
-    consentTitle: "Research Study Consent Form",
-    consentDescription: "Description",
-    consentDescriptionText: "You are invited to participate in a research study on the use of LLMs as translators and their effect on engagement and authenticity in conversation. You will be asked to chat anonymously with another user and answer survey questions about your chat experience.",
-    consentTimeInvolvement: "Time Involvement",
-    consentTimeInvolvementText: "Your participation will take approximately 5-7 minutes.",
-    consentRisks: "Risks and Benefits",
-    consentRisksText: "The risks associated with this study are none. Study data will be stored securely, in compliance with Stanford University standards, minimizing the risk of confidentiality breach.",
-    consentBenefitsText: "The benefits which may reasonably be expected to result from this study are improved understanding of AI-assisted communication and translation. We cannot and do not guarantee or promise that you will receive any benefits from this study.",
-    consentPayment: "Payments",
-    consentPaymentText: "You will receive $2.75 as payment for your participation.",
-    consentRights: "Participant's Rights",
-    consentRightsText: "If you have read this form and have decided to participate in this project, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at any time without penalty or loss of benefits to which you are otherwise entitled.",
-    consentAlternativeText: "The alternative is not to participate. You have the right to refuse to answer particular questions. The results of this research study may be presented at scientific or professional meetings or published in scientific journals. Your individual privacy will be maintained in all published and written data resulting from the study.",
-    
     // Buttons
     findPartnerButton: "Find Chat Partner",
-    continueButton: "Continue to Chat",
     sendButton: "Send",
     endChatButton: "End Chat",
     submitSurveyButton: "Submit Survey",
@@ -165,33 +149,17 @@ const translations = {
       "5": "Totalmente de acuerdo"
     },
     
-    translationeseQuestion: "¿Qué tan efectivos cree que son los LLM para evitar el problema de \"translationese\" (producir traducciones que suenan poco naturales o mecánicas)?",
+    translationeseQuestion: "¿Qué tan efectivos cree que son los LLM para evitar el problema de \"traducción\" (producir traducciones que suenan antinaturales o mecánicas)?",
     translationeseOptions: {
-      "1": "Muy ineficaz",
-      "2": "Algo ineficaz",
+      "1": "Muy inefectivos",
+      "2": "Algo inefectivos",
       "3": "Neutral",
-      "4": "Algo eficaz",
-      "5": "Muy eficaz"
+      "4": "Algo efectivos",
+      "5": "Muy efectivos"
     },
-    
-    // Consent Form
-    consentTitle: "Formulario de Consentimiento del Estudio de Investigación",
-    consentDescription: "Descripción",
-    consentDescriptionText: "Se le invita a participar en un estudio de investigación sobre el uso de LLMs como traductores y su efecto en el compromiso y la autenticidad en la conversación. Se le pedirá que chatee de forma anónima con otro usuario y responda preguntas de encuesta sobre su experiencia en el chat.",
-    consentTimeInvolvement: "Tiempo de Participación",
-    consentTimeInvolvementText: "Su participación tomará aproximadamente 5-7 minutos.",
-    consentRisks: "Riesgos y Beneficios",
-    consentRisksText: "Los riesgos asociados con este estudio son nulos. Los datos del estudio se almacenarán de forma segura, cumpliendo con los estándares de la Universidad de Stanford, minimizando el riesgo de violación de confidencialidad.",
-    consentBenefitsText: "Los beneficios que razonablemente se pueden esperar de este estudio son una mejor comprensión de la comunicación y traducción asistida por IA. No podemos y no garantizamos ni prometemos que recibirá algún beneficio de este estudio.",
-    consentPayment: "Pagos",
-    consentPaymentText: "Recibirá $2.75 como pago por su participación.",
-    consentRights: "Derechos del Participante",
-    consentRightsText: "Si ha leído este formulario y ha decidido participar en este proyecto, por favor entienda que su participación es voluntaria y tiene el derecho de retirar su consentimiento o descontinuar la participación en cualquier momento sin penalización o pérdida de beneficios a los que tiene derecho.",
-    consentAlternativeText: "La alternativa es no participar. Tiene el derecho de negarse a responder preguntas específicas. Los resultados de este estudio de investigación pueden ser presentados en reuniones científicas o profesionales o publicados en revistas científicas. Su privacidad individual se mantendrá en todos los datos publicados y escritos resultantes del estudio.",
     
     // Buttons
     findPartnerButton: "Encontrar Compañero de Chat",
-    continueButton: "Continuar al Chat",
     sendButton: "Enviar",
     endChatButton: "Terminar Chat",
     submitSurveyButton: "Enviar Encuesta",
