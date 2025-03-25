@@ -216,10 +216,9 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
                              if w not in (websocket, waiting_ws)]
             return waiting_ws
     
-    # Check if this user has waited too long
+    # Only try same-language matching if user has waited long enough
     user_join_time = next((t for w, _, t in waiting_room if w == websocket), None)
     if user_join_time and (current_time - user_join_time).total_seconds() >= MAX_WAIT_TIME:
-        # If user has waited too long, try to match with any user of same language
         same_language_users = [(w, t) for w, l, t in waiting_room 
                              if w != websocket and l == language]
         if same_language_users:
@@ -236,69 +235,71 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
 async def cleanup_waiting_room():
     """Remove participants who have waited too long and try to pair them with same-language users."""
     current_time = datetime.now()
-    global waiting_room
+    global waiting_room, active_users
     
     # Sort waiting room by join time to ensure FIFO order
     waiting_room.sort(key=lambda x: x[2])
     
-    # Group users by language
-    english_users = [(ws, join_time) for ws, lang, join_time in waiting_room if lang == "english"]
-    spanish_users = [(ws, join_time) for ws, lang, join_time in waiting_room if lang == "spanish"]
+    # First try to make any possible cross-language matches
+    waiting_room_copy = waiting_room.copy()
+    for ws1, lang1, _ in waiting_room_copy:
+        if ws1 not in waiting_room:  # Skip if already matched
+            continue
+        for ws2, lang2, _ in waiting_room_copy:
+            if ws2 not in waiting_room or ws1 == ws2:  # Skip if already matched or same user
+                continue
+            if (lang1, lang2) in PRIORITY_PAIRS:
+                # Set up the cross-language pair
+                active_users[ws1] = ws2
+                active_users[ws2] = ws1
+                # Remove both users from waiting room
+                waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
+                                 if w not in (ws1, ws2)]
+                break
     
-    # Try to pair expired users with same language
+    # Then handle same-language pairing for users who have waited too long
+    english_users = [(ws, join_time) for ws, lang, join_time in waiting_room 
+                    if lang == "english" and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME]
+    spanish_users = [(ws, join_time) for ws, lang, join_time in waiting_room 
+                    if lang == "spanish" and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME]
+    
+    # Try to pair expired users within each language group
     for users in [english_users, spanish_users]:
         i = 0
         while i < len(users):
             ws, join_time = users[i]
-            wait_time = (current_time - join_time).total_seconds()
-            
-            if wait_time >= MAX_WAIT_TIME and i + 1 < len(users):
-                # Pair with next user in same language group
+            if i + 1 < len(users):
                 partner_ws = users[i + 1][0]
-                # Remove both users from waiting room
-                waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
-                                 if w not in (ws, partner_ws)]
-                # Set up the pair
-                active_users[ws] = partner_ws
-                active_users[partner_ws] = ws
-                i += 2  # Skip both paired users
-            else:
-                i += 1
+                if ws in waiting_room and partner_ws in waiting_room:
+                    # Set up the pair
+                    active_users[ws] = partner_ws
+                    active_users[partner_ws] = ws
+                    # Remove both users from waiting room
+                    waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
+                                     if w not in (ws, partner_ws)]
+                    i += 2  # Skip both paired users
+                    continue
+            i += 1
     
-    # Handle remaining expired users - try to pair them with ANY available user of same language
-    expired_users = [
-        (ws, lang, join_time) for ws, lang, join_time in waiting_room 
+    # Handle remaining expired users who couldn't be paired
+    remaining_users = [
+        (ws, lang) for ws, lang, join_time in waiting_room 
         if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME
     ]
     
-    for expired_ws, expired_lang, _ in expired_users:
-        # Try to find ANY user of the same language to pair with
-        potential_partners = [
-            (ws, join_time) for ws, lang, join_time in waiting_room 
-            if ws != expired_ws and lang == expired_lang
-        ]
+    for ws, lang in remaining_users:
+        # Check if there are any other users with the same language still in waiting room
+        has_potential_match = any(
+            l == lang for w, l, _ in waiting_room 
+            if w != ws
+        )
         
-        if potential_partners:
-            # Get the oldest waiting partner
-            partner_ws, _ = min(potential_partners, key=lambda x: x[1])
-            # Remove both users from waiting room
-            waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
-                             if w not in (expired_ws, partner_ws)]
-            # Set up the pair
-            active_users[expired_ws] = partner_ws
-            active_users[partner_ws] = expired_ws
-        else:
-            # Only notify Prolific if there's absolutely no one else to pair with
-            remaining_same_language = any(
-                lang == expired_lang for ws, lang, _ in waiting_room 
-                if ws != expired_ws
-            )
-            if not remaining_same_language:
-                participant_id = websocket_to_uuid.get(expired_ws)
-                if participant_id:
-                    await notify_prolific_overflow(participant_id)
-                await safe_close(expired_ws)
-                waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w != expired_ws]
+        if not has_potential_match:
+            participant_id = websocket_to_uuid.get(ws)
+            if participant_id:
+                await notify_prolific_overflow(participant_id)
+            await safe_close(ws)
+            waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w != ws]
 
 async def pair_users():
     """Pairs users based on language preferences and waiting time."""
