@@ -112,8 +112,10 @@ def get_conversation_starter(language):
         print(f"[ERROR] No conversation starters found for language {language}")
         return None
         
-    selected = random.choice(starters)
-    print(f"[DEBUG] Selected conversation starter for {language}: {selected}")
+    # Get a random index
+    index = random.randint(0, len(starters) - 1)
+    selected = starters[index]
+    print(f"[DEBUG] Selected conversation starter index {index} for {language}: {selected}")
     return selected
 
 def get_db_connection():
