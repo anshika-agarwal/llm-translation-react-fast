@@ -133,11 +133,12 @@ def remove_user_from_active(user: WebSocket):
     user_languages.pop(user, None)
     user_presurveys.pop(user, None)
     conversation_mapping.pop(user, None)
+
+    print(f"[INFO] Cleaning up all data for user {websocket_to_uuid.get(user, 'unknown')}")
+
     websocket_to_uuid.pop(user, None)
     websocket_locks.pop(user, None)
     
-    print(f"[INFO] Cleaned up all data for user {user}")
-
 async def translate_message(message: str, source_language: str, target_language: str) -> str:
     """
     Translate the given message using the OpenAI API if needed.
@@ -304,6 +305,10 @@ async def cleanup_waiting_room():
             participant_id = websocket_to_uuid.get(ws)
             if participant_id:
                 await notify_prolific_overflow(participant_id)
+            await ws.send_text(json.dumps({
+                "type": "waitingRoomTimeout",
+                "message": "No chat partner found after waiting too long."
+            }))
             await safe_close(ws)
             waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w != ws]
 
@@ -600,6 +605,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     # If no potential matches and waited too long, then exit
                     if not same_language_users and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
                         print(f"[INFO] No potential matches for {user_id} after waiting.")
+                        await websocket.send_text(json.dumps({
+                            "type": "waitingRoomTimeout",
+                            "message": "No chat partner found after waiting too long."
+                        }))
                         await notify_prolific_overflow(user_id)
                         await safe_close(websocket)
                         return
