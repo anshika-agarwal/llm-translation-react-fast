@@ -1,7 +1,7 @@
 const translations = {
   english: {
     // Header
-    title: "Translation Turing Test",
+    title: "Welcome to Chat Room!",
     
     // System Messages
     thankYouMessage: "Thank you for your feedback! You will be redirected to the start page.",
@@ -116,7 +116,7 @@ const translations = {
   
   spanish: {
     // Header
-    title: "Prueba de Turing de Traducción",
+    title: "Bienvenido al Chat Room!",
     
     // System Messages
     thankYouMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de inicio.",

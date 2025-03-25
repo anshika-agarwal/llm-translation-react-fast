@@ -12,6 +12,7 @@ function App() {
   const [showChatPartnerPopup, setShowChatPartnerPopup] = useState(false);
   const [messages, setMessages] = useState([]);
   const [timer, setTimer] = useState("3:00");
+  const [isPartnerTyping, setIsPartnerTyping] = useState(false);
 
   // States for presurvey
   const [qualityRating, setQualityRating] = useState("");
@@ -157,8 +158,9 @@ function App() {
           setTimer(`${minutes}:${seconds.toString().padStart(2, "0")}`);
         } else if (data.type === "message") {
           setMessages((prev) => [...prev, { text: data.text, sender: "partner" }]);
+          setIsPartnerTyping(false);
         } else if (data.type === "typing") {
-          // (Optional) Implement a typing indicator state here
+          handleTypingStatus(data.status);
         } else if (data.type === "survey" || data.type === "expired") {
           setShowChat(false);
           setShowSurvey(true);
@@ -168,6 +170,7 @@ function App() {
           setShowSurvey(false);
           setSurveyCompleted(true);
           alert(getText('thankYouMessage'));
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=CGX95L68";
         } else if (data.type === "waitingRoomTimeout") {
           alert(getText('noPartnerFoundMessage'));
           setShowChatPartnerPopup(false);
@@ -282,6 +285,11 @@ function App() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Add this function to handle typing status
+  const handleTypingStatus = (status) => {
+    setIsPartnerTyping(status === "typing");
+  };
+
   return (
     <div className="app-container">
       <div className="app-content">
@@ -389,6 +397,13 @@ function App() {
                   {msg.text}
                 </div>
               ))}
+              {isPartnerTyping && (
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              )}
             </div>
 
             <div className="chat-input">
