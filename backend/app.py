@@ -62,40 +62,6 @@ import json
 import sys
 from pathlib import Path
 
-# Get the backend translations file path
-translations_file = Path(__file__).parent / 'starters.json'
-print(f"[DEBUG] Looking for translations file at: {translations_file.absolute()}")
-
-def get_translations():
-    """Read and parse the translations JSON file."""
-    try:
-        print(f"[DEBUG] Attempting to read translations from {translations_file.absolute()}")
-        if not translations_file.exists():
-            print(f"[ERROR] Translations file does not exist at {translations_file.absolute()}")
-            return None
-            
-        with open(translations_file, 'r', encoding='utf-8') as f:
-            translations_data = json.load(f)
-            print(f"[DEBUG] Successfully loaded translations. Available languages: {list(translations_data.keys())}")
-            return translations_data
-                
-    except FileNotFoundError:
-        print(f"[ERROR] Translations file not found at {translations_file.absolute()}")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] Failed to parse translations JSON: {e}")
-        return None
-    except Exception as e:
-        print(f"[ERROR] Failed to load translations: {e}")
-        import traceback
-        print(f"[ERROR] Full traceback: {traceback.format_exc()}")
-        return None
-
-# Load translations
-translations = get_translations()
-if translations is None:
-    print("[ERROR] Failed to load translations, conversation starters will not be available")
-
 def get_conversation_starter():
     """Get a random index for the conversation starter."""
     # We know there are 3 starters in each language

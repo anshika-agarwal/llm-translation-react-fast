@@ -35,7 +35,9 @@ export function LanguageProvider({ children }) {
     displayLanguage,
     setDisplayLanguage,
     getText,
-    formatText
+    formatText,
+    language: displayLanguage,
+    translations: translationData
   };
 
   return (
