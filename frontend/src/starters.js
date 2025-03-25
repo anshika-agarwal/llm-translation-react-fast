@@ -10,13 +10,6 @@ const translations = {
     fillAllFieldsMessage: "Please answer all the survey questions before submitting.",
     serverErrorMessage: "Failed to connect to chat server. Please try again.",
     
-    // Conversation Starters
-    conversationStarters: [
-      "What would constitute a \"perfect\" day for you?",
-      "What do you value most in a friendship?",
-      "How do you feel about your relationship with your mother?",
-    ],
-    
     // Language Selection
     selectLanguageTitle: "Select Your Language",
     selectLanguageSubtitle: "Choose your native/most fluent language for the chat",
@@ -142,13 +135,6 @@ const translations = {
     connectionLostMessage: "Se ha perdido la conexión con el servidor. Tu encuesta no puede ser enviada.",
     fillAllFieldsMessage: "Por favor responde todas las preguntas de la encuesta antes de enviar.",
     serverErrorMessage: "Error al conectar con el servidor de chat. Por favor, inténtalo de nuevo.",
-    
-    // Conversation Starters
-    conversationStarters: [
-      "¿Qué constituiría un día \"perfecto\" para ti?",
-      "¿Qué es lo que más valoras en una amistad?",
-      "¿Cómo te sientes acerca de tu relación con tu madre?",
-    ],
     
     // Language Selection
     selectLanguageTitle: "Seleccione su Idioma",

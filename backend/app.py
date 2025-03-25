@@ -62,82 +62,28 @@ import json
 import sys
 from pathlib import Path
 
-# Get the frontend translations file path
-frontend_dir = Path(__file__).parent.parent / 'frontend' / 'src' / 'translations.js'
-print(f"[DEBUG] Looking for translations file at: {frontend_dir.absolute()}")
+# Get the backend translations file path
+translations_file = Path(__file__).parent / 'translations.json'
+print(f"[DEBUG] Looking for translations file at: {translations_file.absolute()}")
 
 def get_translations():
-    """Read and parse the translations file from frontend."""
+    """Read and parse the translations JSON file."""
     try:
-        print(f"[DEBUG] Attempting to read translations from {frontend_dir.absolute()}")
-        if not frontend_dir.exists():
-            print(f"[ERROR] Translations file does not exist at {frontend_dir.absolute()}")
+        print(f"[DEBUG] Attempting to read translations from {translations_file.absolute()}")
+        if not translations_file.exists():
+            print(f"[ERROR] Translations file does not exist at {translations_file.absolute()}")
             return None
             
-        with open(frontend_dir, 'r', encoding='utf-8') as f:
-            content = f.read()
-            print(f"[DEBUG] Successfully read translations file, size: {len(content)} bytes")
-            print(f"[DEBUG] First 200 characters of file: {content[:200]}")
-            
-            # Find the content between export default and the last }
-            start_marker = "export default"
-            start_idx = content.find(start_marker)
-            if start_idx == -1:
-                print("[ERROR] Could not find 'export default' in translations.js")
-                return None
-                
-            print(f"[DEBUG] Found 'export default' at index {start_idx}")
-            
-            # Move past the export default
-            start_idx = content.find('{', start_idx)
-            end_idx = content.rfind('}')
-            
-            print(f"[DEBUG] Found JSON start at {start_idx}, end at {end_idx}")
-            
-            if start_idx == -1 or end_idx == -1:
-                print("[ERROR] Could not find valid JSON structure in translations.js")
-                return None
-            
-            # Get the JSON content and clean it up
-            json_content = content[start_idx:end_idx+1]
-            print(f"[DEBUG] Extracted JSON content length: {len(json_content)}")
-            
-            # Remove any JavaScript comments (both // and /* */ style)
-            cleaned_lines = []
-            in_multiline_comment = False
-            for line in json_content.split('\n'):
-                # Handle multi-line comments
-                if '/*' in line:
-                    in_multiline_comment = True
-                    line = line[:line.find('/*')]
-                if '*/' in line and in_multiline_comment:
-                    in_multiline_comment = False
-                    line = line[line.find('*/')+2:]
-                if in_multiline_comment:
-                    continue
-                    
-                # Handle single-line comments
-                if '//' in line:
-                    line = line[:line.find('//')]
-                
-                # Add non-empty lines
-                if line.strip():
-                    cleaned_lines.append(line)
-            
-            json_content = '\n'.join(cleaned_lines)
-            print(f"[DEBUG] Cleaned JSON content length: {len(json_content)}")
-            
-            try:
-                translations_data = json.loads(json_content)
-                print(f"[DEBUG] Successfully parsed translations. Available languages: {list(translations_data.keys())}")
-                return translations_data
-            except json.JSONDecodeError as e:
-                print(f"[ERROR] Failed to parse translations JSON: {e}")
-                print(f"[DEBUG] JSON content excerpt: {json_content[:200]}...")
-                return None
+        with open(translations_file, 'r', encoding='utf-8') as f:
+            translations_data = json.load(f)
+            print(f"[DEBUG] Successfully loaded translations. Available languages: {list(translations_data.keys())}")
+            return translations_data
                 
     except FileNotFoundError:
-        print(f"[ERROR] Translations file not found at {frontend_dir.absolute()}")
+        print(f"[ERROR] Translations file not found at {translations_file.absolute()}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] Failed to parse translations JSON: {e}")
         return None
     except Exception as e:
         print(f"[ERROR] Failed to load translations: {e}")
