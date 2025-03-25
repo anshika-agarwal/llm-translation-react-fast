@@ -68,26 +68,57 @@ frontend_dir = Path(__file__).parent.parent / 'frontend' / 'src' / 'translations
 def get_translations():
     """Read and parse the translations file from frontend."""
     try:
+        print(f"[DEBUG] Attempting to read translations from {frontend_dir}")
         with open(frontend_dir, 'r', encoding='utf-8') as f:
             content = f.read()
-            # Remove 'export default' and convert to valid JSON
-            content = content.replace('export default', '')
-            content = content.replace('const translations =', '')
-            content = content.strip().rstrip(';')
-            return json.loads(content)
+            print(f"[DEBUG] Successfully read translations file, size: {len(content)} bytes")
+            
+            # Extract the content between the first { and last }
+            start_idx = content.find('{')
+            end_idx = content.rfind('}')
+            if start_idx == -1 or end_idx == -1:
+                print("[ERROR] Could not find valid JSON structure in translations.js")
+                return None
+            
+            # Get the JSON content and clean it up
+            json_content = content[start_idx:end_idx+1]
+            # Remove any JavaScript comments
+            json_content = '\n'.join(line for line in json_content.split('\n') 
+                                   if not line.strip().startswith('//'))
+            
+            try:
+                translations_data = json.loads(json_content)
+                print(f"[DEBUG] Successfully parsed translations. Available languages: {list(translations_data.keys())}")
+                return translations_data
+            except json.JSONDecodeError as e:
+                print(f"[ERROR] Failed to parse translations JSON: {e}")
+                print(f"[DEBUG] JSON content excerpt: {json_content[:200]}...")
+                return None
+                
+    except FileNotFoundError:
+        print(f"[ERROR] Translations file not found at {frontend_dir}")
+        return None
     except Exception as e:
         print(f"[ERROR] Failed to load translations: {e}")
         return None
 
 # Load translations
 translations = get_translations()
+if translations is None:
+    print("[ERROR] Failed to load translations, conversation starters will not be available")
 
 def get_conversation_starter(language):
     """Get a random conversation starter in the specified language."""
     if not translations or language.lower() not in translations:
+        print(f"[ERROR] Language {language} not found in translations")
         return None
+    
     starters = translations[language.lower()].get('conversationStarters', [])
-    return random.choice(starters) if starters else None
+    if not starters:
+        print(f"[ERROR] No conversation starters found for language {language}")
+        return None
+        
+    return random.choice(starters)
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
