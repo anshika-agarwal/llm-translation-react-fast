@@ -336,98 +336,96 @@ function App() {
               </button>
             </div>
           </div>
-        ) : (
-          !isPaired && (
-            <div className="language-selection">
-              <div className="section-header">
-                <h2>{getText('selectLanguageTitle')}</h2>
-                <p>{getText('selectLanguageSubtitle')}</p>
-              </div>
-
-              <div className="language-select">
-                <select 
-                  value={language} 
-                  onChange={(e) => setLanguage(e.target.value)}
-                >
-                  <option value="" disabled>{getText('selectLanguagePrompt')}</option>
-                  <option value="english">English</option>
-                  <option value="spanish">Spanish</option>
-                </select>
-              </div>
-
-              <div className="rating-section">
-                <div className="rating-card">
-                  <p>{getText('llmComparisonQuestion')}</p>
-                  <div className="radio-group">
-                    {Object.entries(getText('llmComparisonOptions')).map(([value, label]) => (
-                      <div key={value} className="radio-option">
-                        <input
-                          type="radio"
-                          id={`quality-${value}`}
-                          name="qualityRating"
-                          value={value}
-                          checked={qualityRating === value}
-                          onChange={(e) => setQualityRating(e.target.value)}
-                        />
-                        <label className="radio-option-label" htmlFor={`quality-${value}`}>
-                          <span className="radio-value">{value}</span>
-                          <span className="radio-description">{label}</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rating-card">
-                  <p>{getText('seamlessConversationQuestion')}</p>
-                  <div className="radio-group">
-                    {Object.entries(getText('seamlessConversationOptions')).map(([value, label]) => (
-                      <div key={value} className="radio-option">
-                        <input
-                          type="radio"
-                          id={`seamless-${value}`}
-                          name="seamlessRating"
-                          value={value}
-                          checked={seamlessRating === value}
-                          onChange={(e) => setSeamlessRating(e.target.value)}
-                        />
-                        <label className="radio-option-label" htmlFor={`seamless-${value}`}>
-                          <span className="radio-value">{value}</span>
-                          <span className="radio-description">{label}</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rating-card">
-                  <p>{getText('translationeseQuestion')}</p>
-                  <div className="radio-group">
-                    {Object.entries(getText('translationeseOptions')).map(([value, label]) => (
-                      <div key={value} className="radio-option">
-                        <input
-                          type="radio"
-                          id={`translationese-${value}`}
-                          name="translationeseRating"
-                          value={value}
-                          checked={translationeseRating === value}
-                          onChange={(e) => setTranslationeseRating(e.target.value)}
-                        />
-                        <label className="radio-option-label" htmlFor={`translationese-${value}`}>
-                          <span className="radio-value">{value}</span>
-                          <span className="radio-description">{label}</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <button className="button-primary find-partner-btn" onClick={findPair}>
-                {getText('findPartnerButton')}
-              </button>
+        ) : !isPaired && (
+          <div className="language-selection">
+            <div className="section-header">
+              <h2>{getText('selectLanguageTitle')}</h2>
+              <p>{getText('selectLanguageSubtitle')}</p>
             </div>
-          )
+
+            <div className="language-select">
+              <select 
+                value={language} 
+                onChange={(e) => setLanguage(e.target.value)}
+              >
+                <option value="" disabled>{getText('selectLanguagePrompt')}</option>
+                <option value="english">English</option>
+                <option value="spanish">Spanish</option>
+              </select>
+            </div>
+
+            <div className="rating-section">
+              <div className="rating-card">
+                <p>{getText('llmComparisonQuestion')}</p>
+                <div className="radio-group">
+                  {Object.entries(getText('llmComparisonOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`quality-${value}`}
+                        name="qualityRating"
+                        value={value}
+                        checked={qualityRating === value}
+                        onChange={(e) => setQualityRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`quality-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rating-card">
+                <p>{getText('seamlessConversationQuestion')}</p>
+                <div className="radio-group">
+                  {Object.entries(getText('seamlessConversationOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`seamless-${value}`}
+                        name="seamlessRating"
+                        value={value}
+                        checked={seamlessRating === value}
+                        onChange={(e) => setSeamlessRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`seamless-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rating-card">
+                <p>{getText('translationeseQuestion')}</p>
+                <div className="radio-group">
+                  {Object.entries(getText('translationeseOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`translationese-${value}`}
+                        name="translationeseRating"
+                        value={value}
+                        checked={translationeseRating === value}
+                        onChange={(e) => setTranslationeseRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`translationese-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button className="button-primary find-partner-btn" onClick={findPair}>
+              {getText('findPartnerButton')}
+            </button>
+          </div>
         )}
 
         {/* Chat Section */}

@@ -1,11 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import translations from './translations';
+import translationData from './translations';
 
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
   const [displayLanguage, setDisplayLanguage] = useState('english');
-  const [translations, setTranslations] = useState({});
 
   useEffect(() => {
     // Extract LANG from URL parameters
@@ -14,13 +13,16 @@ export function LanguageProvider({ children }) {
     if (lang) {
       // Convert to lowercase and remove any curly braces
       const cleanLang = lang.toLowerCase().replace(/[{}]/g, '');
-      setDisplayLanguage(cleanLang);
+      // Only set if it's a supported language
+      if (translationData[cleanLang]) {
+        setDisplayLanguage(cleanLang);
+      }
     }
   }, []);
 
   // Get translations for the current language
   const getText = (key) => {
-    const currentTranslations = translations[displayLanguage] || translations.english;
+    const currentTranslations = translationData[displayLanguage] || translationData.english;
     return key.split('.').reduce((obj, k) => (obj || {})[k], currentTranslations) || key;
   };
 
