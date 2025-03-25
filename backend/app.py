@@ -73,18 +73,46 @@ def get_translations():
             content = f.read()
             print(f"[DEBUG] Successfully read translations file, size: {len(content)} bytes")
             
-            # Extract the content between the first { and last }
-            start_idx = content.find('{')
+            # Find the content between export default and the last }
+            start_marker = "export default"
+            start_idx = content.find(start_marker)
+            if start_idx == -1:
+                print("[ERROR] Could not find 'export default' in translations.js")
+                return None
+                
+            # Move past the export default
+            start_idx = content.find('{', start_idx)
             end_idx = content.rfind('}')
+            
             if start_idx == -1 or end_idx == -1:
                 print("[ERROR] Could not find valid JSON structure in translations.js")
                 return None
             
             # Get the JSON content and clean it up
             json_content = content[start_idx:end_idx+1]
-            # Remove any JavaScript comments
-            json_content = '\n'.join(line for line in json_content.split('\n') 
-                                   if not line.strip().startswith('//'))
+            # Remove any JavaScript comments (both // and /* */ style)
+            cleaned_lines = []
+            in_multiline_comment = False
+            for line in json_content.split('\n'):
+                # Handle multi-line comments
+                if '/*' in line:
+                    in_multiline_comment = True
+                    line = line[:line.find('/*')]
+                if '*/' in line and in_multiline_comment:
+                    in_multiline_comment = False
+                    line = line[line.find('*/')+2:]
+                if in_multiline_comment:
+                    continue
+                    
+                # Handle single-line comments
+                if '//' in line:
+                    line = line[:line.find('//')]
+                
+                # Add non-empty lines
+                if line.strip():
+                    cleaned_lines.append(line)
+            
+            json_content = '\n'.join(cleaned_lines)
             
             try:
                 translations_data = json.loads(json_content)
@@ -109,16 +137,23 @@ if translations is None:
 
 def get_conversation_starter(language):
     """Get a random conversation starter in the specified language."""
-    if not translations or language.lower() not in translations:
-        print(f"[ERROR] Language {language} not found in translations")
+    if not translations:
+        print("[ERROR] No translations loaded")
+        return None
+        
+    language = language.lower()
+    if language not in translations:
+        print(f"[ERROR] Language {language} not found in translations. Available languages: {list(translations.keys())}")
         return None
     
-    starters = translations[language.lower()].get('conversationStarters', [])
+    starters = translations[language].get('conversationStarters', [])
     if not starters:
         print(f"[ERROR] No conversation starters found for language {language}")
         return None
         
-    return random.choice(starters)
+    selected = random.choice(starters)
+    print(f"[DEBUG] Selected conversation starter for {language}: {selected}")
+    return selected
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
