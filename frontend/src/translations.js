@@ -122,7 +122,12 @@ const translations = {
     
     // Messages
     surveySubmittedMessage: "Thank you for your feedback! You will be redirected to the start page.",
-    fillPresurveyMessage: "Please fill in all fields before finding a chat partner"
+    fillPresurveyMessage: "Please fill in all fields before finding a chat partner",
+    conversationStarters: [
+      "What would constitute a \"perfect\" day for you?",
+      "What do you value most in a friendship?",
+      "How do you feel about your relationship with your mother?"
+    ]
   },
   
   spanish: {
@@ -248,7 +253,12 @@ const translations = {
     
     // Messages
     surveySubmittedMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de inicio.",
-    fillPresurveyMessage: "Por favor completa todos los campos antes de buscar un compañero de chat"
+    fillPresurveyMessage: "Por favor completa todos los campos antes de buscar un compañero de chat",
+    conversationStarters: [
+      "¿Qué constituiría un día \"perfecto\" para ti?",
+      "¿Qué es lo que más valoras en una amistad?",
+      "¿Cómo te sientes acerca de tu relación con tu madre?"
+    ]
   }
 };
 

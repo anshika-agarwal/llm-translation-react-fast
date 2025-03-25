@@ -63,7 +63,7 @@ import sys
 from pathlib import Path
 
 # Get the backend translations file path
-translations_file = Path(__file__).parent / 'translations.json'
+translations_file = Path(__file__).parent / 'starters.json'
 print(f"[DEBUG] Looking for translations file at: {translations_file.absolute()}")
 
 def get_translations():
@@ -96,27 +96,10 @@ translations = get_translations()
 if translations is None:
     print("[ERROR] Failed to load translations, conversation starters will not be available")
 
-def get_conversation_starter(language):
-    """Get a random conversation starter in the specified language."""
-    if not translations:
-        print("[ERROR] No translations loaded")
-        return None
-        
-    language = language.lower()
-    if language not in translations:
-        print(f"[ERROR] Language {language} not found in translations. Available languages: {list(translations.keys())}")
-        return None
-    
-    starters = translations[language].get('conversationStarters', [])
-    if not starters:
-        print(f"[ERROR] No conversation starters found for language {language}")
-        return None
-        
-    # Get a random index
-    index = random.randint(0, len(starters) - 1)
-    selected = starters[index]
-    print(f"[DEBUG] Selected conversation starter index {index} for {language}: {selected}")
-    return selected
+def get_conversation_starter():
+    """Get a random index for the conversation starter."""
+    # We know there are 3 starters in each language
+    return random.randint(0, 2)
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
@@ -387,12 +370,9 @@ async def pair_users():
             user1_id = websocket_to_uuid.get(websocket)
             user2_id = websocket_to_uuid.get(match)
             
-            # Select a random conversation starter in the user's language
-            user_lang = user_languages[websocket].lower()
-            convo_starter = get_conversation_starter(user_lang)
-            if not convo_starter:
-                print(f"[WARNING] Could not find conversation starter for language {user_lang}")
-                convo_starter = get_conversation_starter('english')  # fallback to English
+            # Get a random conversation starter index
+            starter_index = get_conversation_starter()
+            print(f"[DEBUG] Selected conversation starter index: {starter_index}")
             
             try:
                 conn = get_db_connection()
@@ -412,7 +392,7 @@ async def pair_users():
                         Json([]),
                         Json(user_presurveys[websocket]),
                         Json(user_presurveys[match]),
-                        convo_starter
+                        starter_index
                     ))
                     conversation_id = cursor.fetchone()[0]
                     conn.commit()
@@ -424,7 +404,7 @@ async def pair_users():
                     "type": "paired",
                     "message": "You are now paired. Start chatting!",
                     "conversation_id": conversation_id,
-                    "convo_starter": convo_starter
+                    "starter_index": starter_index
                 })
                 await asyncio.gather(websocket.send_text(pairing_message), match.send_text(pairing_message))
                 # Start chat timer for this conversation

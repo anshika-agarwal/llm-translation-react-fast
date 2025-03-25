@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from './LanguageContext';
 
 function App() {
-  const { getText, formatText, displayLanguage } = useLanguage();
+  const { getText, formatText, displayLanguage, language, translations } = useLanguage();
 
   // States for UI visibility and data
   const [isPaired, setIsPaired] = useState(false);
@@ -149,7 +149,11 @@ function App() {
           setShowChat(true);
           setShowChatPartnerPopup(false);
           setConversationId(data.conversation_id);
-          setConversationStarter(data.convo_starter);
+          // Get the conversation starter from translations using the index
+          const starterIndex = data.starter_index;
+          const currentLanguage = language.toLowerCase();
+          const starter = translations[currentLanguage].conversationStarters[starterIndex];
+          setConversationStarter(starter);
           console.log(data.message);
         } else if (data.type === "timer") {
           const minutes = Math.floor(data.remaining_time / 60);
