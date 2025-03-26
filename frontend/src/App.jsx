@@ -172,8 +172,9 @@ function App() {
           alert(getText('thankYouMessage'));
           window.location.href = "https://app.prolific.com/submissions/complete?cc=CGX95L68";
         } else if (data.type === "waitingRoomTimeout") {
-          alert(getText('noPartnerFoundMessage'));
           setShowChatPartnerPopup(false);
+          alert(getText('noPartnerFoundMessage'));
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=C1MWSEL0";
         }
       };
 

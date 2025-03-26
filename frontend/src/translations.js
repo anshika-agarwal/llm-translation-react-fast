@@ -5,10 +5,10 @@ const translations = {
     
     // System Messages
     thankYouMessage: "Thank you for your feedback! You will be redirected to the start page.",
-    noPartnerFoundMessage: "Could not find a chat partner. Try again later!",
+    noPartnerFoundMessage: "Sorry we could not pair you at this time. Please try again later",
     connectionLostMessage: "Connection to the server has been lost. Your survey cannot be submitted.",
     fillAllFieldsMessage: "Please answer all the survey questions before submitting.",
-    serverErrorMessage: "Failed to connect to chat server. Please try again.",
+    serverErrorMessage: "Connection error. Please try again.",
     
     // Language Selection
     selectLanguageTitle: "Select Your Language",
@@ -56,7 +56,7 @@ const translations = {
     
     // Waiting Room
     waitingTitle: "Looking for a Chat Partner",
-    waitingDescription: "We're working to pair you with a suitable chat partner. Most users are matched within 1-2 minutes. If you're not paired after this time, you may want to try again later when more users are active.",
+    waitingDescription: "We are looking for a chat partner for you. This may take a few minutes.",
     waitTimeLabel: "Wait time:",
     
     // Post-Survey
@@ -105,7 +105,7 @@ const translations = {
     nonNativeOption: "non-native",
     
     // Messages
-    surveySubmittedMessage: "Thank you for your feedback! You will be redirected to the start page.",
+    surveySubmittedMessage: "Thank you for your feedback! You will be redirected to the completion page.",
     fillPresurveyMessage: "Please fill in all fields before finding a chat partner",
     conversationStarters: [
       "What would constitute a \"perfect\" day for you?",
@@ -120,10 +120,10 @@ const translations = {
     
     // System Messages
     thankYouMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de inicio.",
-    noPartnerFoundMessage: "No se pudo encontrar un compañero de chat. ¡Inténtalo más tarde!",
+    noPartnerFoundMessage: "Lo sentimos, no pudimos encontrar un compañero en este momento. Por favor, inténtalo de nuevo más tarde",
     connectionLostMessage: "Se ha perdido la conexión con el servidor. Tu encuesta no puede ser enviada.",
     fillAllFieldsMessage: "Por favor responde todas las preguntas de la encuesta antes de enviar.",
-    serverErrorMessage: "Error al conectar con el servidor de chat. Por favor, inténtalo de nuevo.",
+    serverErrorMessage: "Error de conexión. Por favor, inténtalo de nuevo.",
     
     // Language Selection
     selectLanguageTitle: "Seleccione su Idioma",
@@ -171,7 +171,7 @@ const translations = {
     
     // Waiting Room
     waitingTitle: "Buscando Compañero de Chat",
-    waitingDescription: "Estamos trabajando para emparejarte con un compañero de chat adecuado. La mayoría de los usuarios son emparejados en 1-2 minutos. Si no eres emparejado después de este tiempo, puedes intentarlo más tarde cuando haya más usuarios activos.",
+    waitingDescription: "Estamos buscando un compañero de chat para ti. Esto puede tardar unos minutos.",
     waitTimeLabel: "Tiempo de espera:",
     
     // Post-Survey
@@ -220,7 +220,7 @@ const translations = {
     nonNativeOption: "no nativo",
     
     // Messages
-    surveySubmittedMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de inicio.",
+    surveySubmittedMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de completación.",
     fillPresurveyMessage: "Por favor completa todos los campos antes de buscar un compañero de chat",
     conversationStarters: [
       "¿Qué constituiría un día \"perfecto\" para ti?",

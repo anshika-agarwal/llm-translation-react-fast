@@ -47,7 +47,8 @@ DB_CONFIG = {
 # Add these constants after the DB_CONFIG
 PROLIFIC_API_KEY = os.getenv("PROLIFIC_API_KEY")
 PROLIFIC_API_URL = "https://api.prolific.com/api/v1"
-MAX_WAIT_TIME = 60  # seconds
+PRIORITY_WAIT_TIME = 90  # seconds for priority matching (different languages only)
+MAX_WAIT_TIME = 120     # seconds before timeout
 PRIORITY_PAIRS = [
     ("english", "spanish"),
     ("spanish", "english")
@@ -214,6 +215,11 @@ async def notify_prolific_overflow(participant_id: str):
 def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
     """Find the best matching partner based on language preferences and waiting time."""
     current_time = datetime.now()
+    user_join_time = next((t for w, _, t in waiting_room if w == websocket), None)
+    if not user_join_time:
+        return None
+    
+    wait_time = (current_time - user_join_time).total_seconds()
     
     # First, try to find a priority match (different languages)
     for waiting_ws, waiting_lang, join_time in waiting_room:
@@ -223,9 +229,8 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
                              if w not in (websocket, waiting_ws)]
             return waiting_ws
     
-    # Only try same-language matching if user has waited long enough
-    user_join_time = next((t for w, _, t in waiting_room if w == websocket), None)
-    if user_join_time and (current_time - user_join_time).total_seconds() >= MAX_WAIT_TIME:
+    # If user has waited longer than PRIORITY_WAIT_TIME, try same-language matching
+    if wait_time >= PRIORITY_WAIT_TIME:
         same_language_users = [(w, t) for w, l, t in waiting_room 
                              if w != websocket and l == language]
         if same_language_users:
@@ -264,11 +269,11 @@ async def cleanup_waiting_room():
                                  if w not in (ws1, ws2)]
                 break
     
-    # Then handle same-language pairing for users who have waited too long
+    # Then handle same-language pairing for users who have waited longer than PRIORITY_WAIT_TIME
     english_users = [(ws, join_time) for ws, lang, join_time in waiting_room 
-                    if lang == "english" and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME]
+                    if lang == "english" and (current_time - join_time).total_seconds() >= PRIORITY_WAIT_TIME]
     spanish_users = [(ws, join_time) for ws, lang, join_time in waiting_room 
-                    if lang == "spanish" and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME]
+                    if lang == "spanish" and (current_time - join_time).total_seconds() >= PRIORITY_WAIT_TIME]
     
     # Try to pair expired users within each language group
     for users in [english_users, spanish_users]:
@@ -288,7 +293,7 @@ async def cleanup_waiting_room():
                     continue
             i += 1
     
-    # Handle remaining expired users who couldn't be paired
+    # Handle remaining expired users who have waited MAX_WAIT_TIME
     remaining_users = [
         (ws, lang) for ws, lang, join_time in waiting_room 
         if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME
