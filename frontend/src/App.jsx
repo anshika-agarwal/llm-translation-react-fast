@@ -173,6 +173,12 @@ function App() {
           window.location.href = "https://app.prolific.com/submissions/complete?cc=CGX95L68";
         } else if (data.type === "waitingRoomTimeout") {
           setShowChatPartnerPopup(false);
+          setIsWaiting(false);
+          setWaitStartTime(null);
+          setElapsedTime(0);
+          setQualityRating("");
+          setSeamlessRating("");
+          setTranslationeseRating("");
           alert(getText('noPartnerFoundMessage'));
           window.location.href = "https://app.prolific.com/submissions/complete?cc=C1MWSEL0";
         }

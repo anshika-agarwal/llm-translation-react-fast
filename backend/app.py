@@ -47,8 +47,8 @@ DB_CONFIG = {
 # Add these constants after the DB_CONFIG
 PROLIFIC_API_KEY = os.getenv("PROLIFIC_API_KEY")
 PROLIFIC_API_URL = "https://api.prolific.com/api/v1"
-PRIORITY_WAIT_TIME = 90  # seconds for priority matching (different languages only)
-MAX_WAIT_TIME = 120     # seconds before timeout
+PRIORITY_WAIT_TIME = 60  # seconds for priority matching (different languages only)
+MAX_WAIT_TIME = 90     # seconds before timeout
 PRIORITY_PAIRS = [
     ("english", "spanish"),
     ("spanish", "english")
