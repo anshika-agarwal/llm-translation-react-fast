@@ -81,6 +81,7 @@ chat_timers = {}          # Maps conversation_id to its timer task
 websocket_to_uuid = {}    # Maps a websocket to its persistent user UUID
 chat_sessions = {}        # Maps conversation_id to the central chat session task
 websocket_locks = {}      # Maps websocket to its lock
+conversation_start_times = {}  # Maps conversation_id to its start time
 
 # -------------------- Helper Functions --------------------
 
@@ -183,6 +184,25 @@ async def chat_timer_task(user1: WebSocket, user2: WebSocket, conversation_id):
             "message": "Chat timer has expired."
         })
         print(f"[INFO] Chat timer expired for conversation {conversation_id}.")
+        
+        # Calculate conversation length for automatic expiry
+        end_time = datetime.now()
+        start_time = conversation_start_times.get(conversation_id, end_time)
+        duration = end_time - start_time
+        
+        # Update database with conversation length
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE conversations
+                    SET conversation_length = %s
+                    WHERE conversation_id = %s
+                """, (duration, conversation_id))
+                conn.commit()
+        finally:
+            conn.close()
+            
         await asyncio.gather(user1.send_text(expired_message), user2.send_text(expired_message))
     except asyncio.CancelledError:
         print(f"[INFO] Chat timer cancelled for conversation {conversation_id}.")
@@ -400,6 +420,9 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     try:
         conn = get_db_connection()
         chat_ended = False
+        # Record conversation start time
+        conversation_start_times[conversation_id] = datetime.now()
+        
         while not chat_ended or not all(survey_submitted.values()):
             # Create concurrent receive tasks for both users
             user1_task = asyncio.create_task(safe_receive(user1))
@@ -427,6 +450,21 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                             if conversation_id in chat_timers:
                                 chat_timers[conversation_id].cancel()
                                 del chat_timers[conversation_id]
+                            
+                            # Calculate conversation length
+                            end_time = datetime.now()
+                            start_time = conversation_start_times.get(conversation_id, end_time)
+                            duration = end_time - start_time
+                            
+                            # Update database with conversation length
+                            with conn.cursor() as cursor:
+                                cursor.execute("""
+                                    UPDATE conversations
+                                    SET conversation_length = %s
+                                    WHERE conversation_id = %s
+                                """, (duration, conversation_id))
+                                conn.commit()
+                            
                             survey_prompt = json.dumps({
                                 "type": "survey",
                                 "conversation_id": conversation_id,
