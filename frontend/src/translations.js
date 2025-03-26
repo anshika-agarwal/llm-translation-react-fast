@@ -56,7 +56,7 @@ const translations = {
     
     // Waiting Room
     waitingTitle: "Looking for a Chat Partner",
-    waitingDescription: "We are looking for a chat partner for you. This may take up to 90 seconds.",
+    waitingDescription: "We are looking for a chat partner for you. This may take a few minutes.",
     waitTimeLabel: "Wait time:",
     
     // Post-Survey
@@ -171,7 +171,7 @@ const translations = {
     
     // Waiting Room
     waitingTitle: "Buscando Compañero de Chat",
-    waitingDescription: "Estamos buscando un compañero de chat para ti. Esto puede tardar noventa segundos.",
+    waitingDescription: "Estamos buscando un compañero de chat para ti. Esto puede tardar unos minutos.",
     waitTimeLabel: "Tiempo de espera:",
     
     // Post-Survey
