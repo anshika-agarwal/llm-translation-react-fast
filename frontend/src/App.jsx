@@ -99,10 +99,6 @@ function App() {
   const findPair = async () => {
     setIsWaiting(true);
     setWaitStartTime(Date.now());
-    if (!qualityRating || !seamlessRating || !translationeseRating) {
-      alert(getText('fillPresurveyMessage'));
-      return;
-    }
     
     console.log("Attempting to find chat partner...");
     setShowChatPartnerPopup(true);
@@ -116,9 +112,6 @@ function App() {
         const data = {
           type: "language",
           language: displayLanguage,
-          qualityRating: qualityRating,
-          seamlessRating: seamlessRating,
-          translationeseRating: translationeseRating,
           prolific_pid: prolificPid,
           study_id: studyId,
           session_id: sessionId
@@ -299,76 +292,14 @@ function App() {
         </header>
 
         {!isPaired && (
-          <div className="rating-section">
-            <div className="rating-card">
-              <p>{getText('llmComparisonQuestion')}</p>
-              <div className="radio-group">
-                {Object.entries(getText('llmComparisonOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`quality-${value}`}
-                      name="qualityRating"
-                      value={value}
-                      checked={qualityRating === value}
-                      onChange={(e) => setQualityRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`quality-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
+          <div className="landing-section">
+            <div className="landing-content">
+              <h2>{getText('welcomeTitle')}</h2>
+              <p>{getText('welcomeDescription')}</p>
+              <button className="button-primary find-partner-btn" onClick={findPair}>
+                {getText('findPartnerButton')}
+              </button>
             </div>
-
-            <div className="rating-card">
-              <p>{getText('seamlessConversationQuestion')}</p>
-              <div className="radio-group">
-                {Object.entries(getText('seamlessConversationOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`seamless-${value}`}
-                      name="seamlessRating"
-                      value={value}
-                      checked={seamlessRating === value}
-                      onChange={(e) => setSeamlessRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`seamless-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rating-card">
-              <p>{getText('translationeseQuestion')}</p>
-              <div className="radio-group">
-                {Object.entries(getText('translationeseOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`translationese-${value}`}
-                      name="translationeseRating"
-                      value={value}
-                      checked={translationeseRating === value}
-                      onChange={(e) => setTranslationeseRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`translationese-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button className="button-primary find-partner-btn" onClick={findPair}>
-              {getText('findPartnerButton')}
-            </button>
           </div>
         )}
 
