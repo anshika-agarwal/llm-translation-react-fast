@@ -151,8 +151,8 @@ function App() {
           setIsWaiting(false);
           setWaitStartTime(null);
           setElapsedTime(0);
-          alert(getText('noPartnerFoundMessage'));
-          window.location.href = "https://app.prolific.com/submissions/complete?cc=C1MWSEL0";
+          alert(getText('timeoutMessage'));
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=C1K0V0ZZ";
         }
       };
 

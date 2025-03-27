@@ -9,6 +9,7 @@ const translations = {
     connectionLostMessage: "Connection to the server has been lost. Your survey cannot be submitted.",
     fillAllFieldsMessage: "Please answer all the survey questions before submitting.",
     serverErrorMessage: "Connection error. Please try again.",
+    timeoutMessage: "Sorry, we could not pair you at this time. You will be redirected to return.",
     
     // Language Selection
     selectLanguageTitle: "Select Your Language",
@@ -124,6 +125,7 @@ const translations = {
     connectionLostMessage: "Se ha perdido la conexión con el servidor. Tu encuesta no puede ser enviada.",
     fillAllFieldsMessage: "Por favor responde todas las preguntas de la encuesta antes de enviar.",
     serverErrorMessage: "Error de conexión. Por favor, inténtalo de nuevo.",
+    timeoutMessage: "Lo sentimos, no pudimos encontrar un compañero en este momento. Serás redirigido para volver.",
     
     // Language Selection
     selectLanguageTitle: "Seleccione su Idioma",

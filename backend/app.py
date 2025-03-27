@@ -47,8 +47,8 @@ DB_CONFIG = {
 # Add these constants after the DB_CONFIG
 PROLIFIC_API_KEY = os.getenv("PROLIFIC_API_KEY")
 PROLIFIC_API_URL = "https://api.prolific.com/api/v1"
-PRIORITY_WAIT_TIME = 300  # seconds for priority matching (different languages only)
-MAX_WAIT_TIME = 360     # seconds before timeout
+#PRIORITY_WAIT_TIME = 300  # seconds for priority matching (different languages only)
+MAX_WAIT_TIME = 10     # seconds before timeout
 PRIORITY_PAIRS = [
     ("english", "spanish"),
     ("spanish", "english")
@@ -238,22 +238,9 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
     
     wait_time = (current_time - user_join_time).total_seconds()
     
-    # First, try to find a priority match (different languages)
+    # Only try to find priority matches (different languages)
     for waiting_ws, waiting_lang, join_time in waiting_room:
         if waiting_ws != websocket and (language, waiting_lang) in PRIORITY_PAIRS:
-            # Remove the matched pair from waiting room immediately
-            waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
-                             if w not in (websocket, waiting_ws)]
-            return waiting_ws
-    
-    # If user has waited longer than PRIORITY_WAIT_TIME, try same-language matching
-    if wait_time >= PRIORITY_WAIT_TIME:
-        same_language_users = [(w, t) for w, l, t in waiting_room 
-                             if w != websocket and l == language]
-        if same_language_users:
-            # Sort by join time and get the oldest waiting user
-            oldest_waiting = min(same_language_users, key=lambda x: x[1])
-            waiting_ws = oldest_waiting[0]
             # Remove the matched pair from waiting room immediately
             waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
                              if w not in (websocket, waiting_ws)]
@@ -269,7 +256,7 @@ async def cleanup_waiting_room():
     # Sort waiting room by join time to ensure FIFO order
     waiting_room.sort(key=lambda x: x[2])
     
-    # First try to make any possible cross-language matches
+    # Try to make any possible cross-language matches
     waiting_room_copy = waiting_room.copy()
     for ws1, lang1, _ in waiting_room_copy:
         if ws1 not in waiting_room:  # Skip if already matched
@@ -286,53 +273,22 @@ async def cleanup_waiting_room():
                                  if w not in (ws1, ws2)]
                 break
     
-    # Then handle same-language pairing for users who have waited longer than PRIORITY_WAIT_TIME
-    english_users = [(ws, join_time) for ws, lang, join_time in waiting_room 
-                    if lang == "english" and (current_time - join_time).total_seconds() >= PRIORITY_WAIT_TIME]
-    spanish_users = [(ws, join_time) for ws, lang, join_time in waiting_room 
-                    if lang == "spanish" and (current_time - join_time).total_seconds() >= PRIORITY_WAIT_TIME]
-    
-    # Try to pair expired users within each language group
-    for users in [english_users, spanish_users]:
-        i = 0
-        while i < len(users):
-            ws, join_time = users[i]
-            if i + 1 < len(users):
-                partner_ws = users[i + 1][0]
-                if ws in waiting_room and partner_ws in waiting_room:
-                    # Set up the pair
-                    active_users[ws] = partner_ws
-                    active_users[partner_ws] = ws
-                    # Remove both users from waiting room
-                    waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
-                                     if w not in (ws, partner_ws)]
-                    i += 2  # Skip both paired users
-                    continue
-            i += 1
-    
-    # Handle remaining expired users who have waited MAX_WAIT_TIME
+    # Handle remaining users who have waited MAX_WAIT_TIME
     remaining_users = [
         (ws, lang) for ws, lang, join_time in waiting_room 
         if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME
     ]
     
     for ws, lang in remaining_users:
-        # Check if there are any other users with the same language still in waiting room
-        has_potential_match = any(
-            l == lang for w, l, _ in waiting_room 
-            if w != ws
-        )
-        
-        if not has_potential_match:
-            participant_id = websocket_to_uuid.get(ws)
-            if participant_id:
-                await notify_prolific_overflow(participant_id)
-            await ws.send_text(json.dumps({
-                "type": "waitingRoomTimeout",
-                "message": "No chat partner found after waiting too long."
-            }))
-            await safe_close(ws)
-            waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w != ws]
+        participant_id = websocket_to_uuid.get(ws)
+        if participant_id:
+            await notify_prolific_overflow(participant_id)
+        await ws.send_text(json.dumps({
+            "type": "waitingRoomTimeout",
+            "message": "Sorry, we could not pair you at this time. Please try again later. You will be redirected to return."
+        }))
+        await safe_close(ws)
+        waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w != ws]
 
 async def pair_users():
     """Pairs users based on language preferences and waiting time."""
@@ -640,32 +596,22 @@ async def websocket_endpoint(websocket: WebSocket):
             waiting_room.append((websocket, data["language"], datetime.now()))
             print(f"[INFO] User {user_id} selected language: {data['language']}.")
             
-            # Keep trying to pair until either paired or no possible matches remain
+            # Keep trying to pair until either paired or timeout
+            start_time = datetime.now()
             while websocket not in conversation_mapping:
                 # Try to pair immediately
                 await pair_users()
                 
-                # If still not paired, check if there are any potential matches
-                current_time = datetime.now()
-                join_time = next((t for w, _, t in waiting_room if w == websocket), None)
-                
-                if join_time:
-                    # Check if there are any other users with the same language
-                    same_language_users = [
-                        w for w, lang, _ in waiting_room 
-                        if w != websocket and lang == user_languages[websocket]
-                    ]
-                    
-                    # If no potential matches and waited too long, then exit
-                    if not same_language_users and (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
-                        print(f"[INFO] No potential matches for {user_id} after waiting.")
-                        await websocket.send_text(json.dumps({
-                            "type": "waitingRoomTimeout",
-                            "message": "No chat partner found after waiting too long."
-                        }))
-                        await notify_prolific_overflow(user_id)
-                        await safe_close(websocket)
-                        return
+                # Check if we've exceeded MAX_WAIT_TIME
+                if (datetime.now() - start_time).total_seconds() >= MAX_WAIT_TIME:
+                    print(f"[INFO] No priority matches found for {user_id} after waiting {MAX_WAIT_TIME} seconds.")
+                    await websocket.send_text(json.dumps({
+                        "type": "waitingRoomTimeout",
+                        "message": "Sorry, we could not pair you at this time. Please try again later. You will be redirected to return."
+                    }))
+                    await notify_prolific_overflow(user_id)
+                    await safe_close(websocket)
+                    return
                 
                 await asyncio.sleep(1)
             
