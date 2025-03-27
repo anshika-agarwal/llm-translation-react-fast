@@ -454,7 +454,9 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                             # Calculate conversation length
                             end_time = datetime.now()
                             start_time = conversation_start_times.get(conversation_id, end_time)
-                            duration = end_time - start_time
+                            duration = (end_time - start_time).total_seconds()
+                            minutes = int(duration // 60)
+                            seconds = int(duration % 60)
                             
                             # Update database with conversation length
                             with conn.cursor() as cursor:
@@ -462,7 +464,7 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                                     UPDATE conversations
                                     SET conversation_length = %s
                                     WHERE conversation_id = %s
-                                """, (duration, conversation_id))
+                                """, (f"{minutes}:{seconds:02d}", conversation_id))
                                 conn.commit()
                             
                             survey_prompt = json.dumps({
@@ -476,6 +478,15 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                         elif message["type"] == "survey":
                             sender = user1 if task == user1_task else user2
                             await handle_survey_submission(conn, conversation_id, sender, message, survey_submitted)
+                            
+                            # Check if both surveys are submitted
+                            if all(survey_submitted.values()):
+                                print("[INFO] Both surveys submitted. Waiting for final messages before closing.")
+                                # Give a small delay to ensure all messages are processed
+                                await asyncio.sleep(1)
+                                print("[INFO] Closing WebSocket connections.")
+                                await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
+                                return
 
                         elif message["type"] in ["typing", "stopTyping"]:
                             target_user = user2 if task == user1_task else user1
@@ -506,11 +517,12 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     finally:
         if conn:
             conn.close()
+        # Only close WebSocket connections if both surveys are submitted
         if all(survey_submitted.values()):
+            print("[INFO] Both surveys submitted. Closing WebSocket connections.")
             await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
-            print("[INFO] Both surveys submitted. Chat session ended and WebSocket connections closed.")
         else:
-            print("[WARNING] Chat session ended but not all surveys were submitted.")
+            print(f"[WARNING] Chat session ended but not all surveys were submitted. User1: {survey_submitted[user1]}, User2: {survey_submitted[user2]}")
 
 async def handle_survey_submission(conn, conversation_id, sender, message, survey_submitted):
     """Handle survey submission and database updates."""
@@ -559,14 +571,23 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
             """, (Json(message), conversation_id))
             conn.commit()
         print(f"[INFO] Stored survey for user {sender_uuid} in conversation {conversation_id}.")
+        
+        # Update the survey_submitted dictionary
         survey_submitted[sender] = True
         
+        # Send confirmation to the sender
         await sender.send_text(json.dumps({
             "type": "surveyReceived",
             "message": "Your survey has been submitted successfully."
         }))
+        
+        # Log the current state of survey submissions
+        print(f"[INFO] Survey submission state - User1: {survey_submitted[user1]}, User2: {survey_submitted[user2]}")
+        
     except Exception as e:
         print(f"[ERROR] Failed to store survey: {e}")
+        # Don't mark as submitted if there was an error
+        survey_submitted[sender] = False
 
 async def handle_message(conn, conversation_id, sender, receiver, message):
     """Handle message translation and storage."""
