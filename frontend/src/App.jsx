@@ -14,11 +14,6 @@ function App() {
   const [timer, setTimer] = useState("3:00");
   const [isPartnerTyping, setIsPartnerTyping] = useState(false);
 
-  // States for presurvey
-  const [qualityRating, setQualityRating] = useState("");
-  const [seamlessRating, setSeamlessRating] = useState("");
-  const [translationeseRating, setTranslationeseRating] = useState("");  
-
   // Chat input
   const [chatMessage, setChatMessage] = useState("");
 
@@ -68,9 +63,6 @@ function App() {
       setShowChat(false);
       setShowSurvey(false);
       setMessages([]);
-      setQualityRating("");
-      setSeamlessRating("");
-      setTranslationeseRating("");
       setEngagementRating("");
       setFriendlinessRating("");
       setOverallRating("");
@@ -159,9 +151,6 @@ function App() {
           setIsWaiting(false);
           setWaitStartTime(null);
           setElapsedTime(0);
-          setQualityRating("");
-          setSeamlessRating("");
-          setTranslationeseRating("");
           alert(getText('noPartnerFoundMessage'));
           window.location.href = "https://app.prolific.com/submissions/complete?cc=C1MWSEL0";
         }
@@ -292,14 +281,10 @@ function App() {
         </header>
 
         {!isPaired && (
-          <div className="landing-section">
-            <div className="landing-content">
-              <h2>{getText('welcomeTitle')}</h2>
-              <p>{getText('welcomeDescription')}</p>
-              <button className="button-primary find-partner-btn" onClick={findPair}>
-                {getText('findPartnerButton')}
-              </button>
-            </div>
+          <div className="rating-section">
+            <button className="button-primary find-partner-btn" onClick={findPair}>
+              {getText('findPartnerButton')}
+            </button>
           </div>
         )}
 

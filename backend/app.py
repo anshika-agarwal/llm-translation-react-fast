@@ -118,7 +118,7 @@ async def safe_close(websocket: WebSocket):
 
 def remove_user_from_active(user: WebSocket):
     """Removes a user from active users and cleans up the waiting room."""
-    global active_users, waiting_room, user_languages, conversation_mapping, websocket_to_uuid, websocket_locks
+    global active_users, waiting_room, user_languages, websocket_to_uuid, websocket_locks
     
     # Remove from active users
     if user in active_users:
@@ -132,7 +132,6 @@ def remove_user_from_active(user: WebSocket):
     
     # Clean up other mappings
     user_languages.pop(user, None)
-    conversation_mapping.pop(user, None)
 
     print(f"[INFO] Cleaning up all data for user {websocket_to_uuid.get(user, 'unknown')}")
 
@@ -412,13 +411,14 @@ async def pair_users():
 async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     """Central chat session that reads messages from both users."""
     conn = None
+    survey_submitted = {user1: False, user2: False}
     try:
         conn = get_db_connection()
         chat_ended = False
         # Record conversation start time
         conversation_start_times[conversation_id] = datetime.now()
         
-        while not chat_ended:
+        while not chat_ended or not all(survey_submitted.values()):
             # Create concurrent receive tasks for both users
             user1_task = asyncio.create_task(safe_receive(user1))
             user2_task = asyncio.create_task(safe_receive(user2))
@@ -470,6 +470,19 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                             await asyncio.gather(user1.send_text(survey_prompt), user2.send_text(survey_prompt))
                             print("[INFO] Sent survey prompts to both users.")
 
+                        elif message["type"] == "survey":
+                            sender = user1 if task == user1_task else user2
+                            await handle_survey_submission(conn, conversation_id, sender, message, survey_submitted)
+                            
+                            # Check if both surveys are submitted
+                            if all(survey_submitted.values()):
+                                print("[INFO] Both surveys submitted. Waiting for final messages before closing.")
+                                # Give a small delay to ensure all messages are processed
+                                await asyncio.sleep(1)
+                                print("[INFO] Closing WebSocket connections.")
+                                await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
+                                return
+
                         elif message["type"] in ["typing", "stopTyping"]:
                             target_user = user2 if task == user1_task else user1
                             await target_user.send_text(json.dumps({
@@ -499,6 +512,77 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     finally:
         if conn:
             conn.close()
+        # Only close WebSocket connections if both surveys are submitted
+        if all(survey_submitted.values()):
+            print("[INFO] Both surveys submitted. Closing WebSocket connections.")
+            await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
+        else:
+            print(f"[WARNING] Chat session ended but not all surveys were submitted. User1: {survey_submitted[user1]}, User2: {survey_submitted[user2]}")
+
+async def handle_survey_submission(conn, conversation_id, sender, message, survey_submitted):
+    """Handle survey submission and database updates."""
+    try:
+        # First determine which user (1 or 2) the sender is for this conversation
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT user1_id, user2_id
+                FROM conversations
+                WHERE conversation_id = %s
+            """, (conversation_id,))
+            result = cursor.fetchone()
+            if not result:
+                print(f"[ERROR] Could not find conversation {conversation_id}")
+                return
+            user1_id, user2_id = result
+            
+        # Determine if sender is user1 or user2
+        sender_uuid = websocket_to_uuid.get(sender)
+        is_user1 = sender_uuid == user1_id
+        
+        # Now check existing survey submissions
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT user1_postsurvey, user2_postsurvey
+                FROM conversations
+                WHERE conversation_id = %s
+            """, (conversation_id,))
+            result = cursor.fetchone()
+            user1_postsurvey, user2_postsurvey = result if result else (None, None)
+        
+        # Determine which column to update
+        if is_user1 and not user1_postsurvey:
+            column = "user1_postsurvey"
+        elif not is_user1 and not user2_postsurvey:
+            column = "user2_postsurvey"
+        else:
+            print(f"[WARNING] Survey already submitted for this user in conversation {conversation_id}.")
+            return
+            
+        with conn.cursor() as cursor:
+            cursor.execute(f"""
+                UPDATE conversations
+                SET {column} = %s
+                WHERE conversation_id = %s
+            """, (Json(message), conversation_id))
+            conn.commit()
+        print(f"[INFO] Stored survey for user {sender_uuid} in conversation {conversation_id}.")
+        
+        # Update the survey_submitted dictionary
+        survey_submitted[sender] = True
+        
+        # Send confirmation to the sender
+        await sender.send_text(json.dumps({
+            "type": "surveyReceived",
+            "message": "Your survey has been submitted successfully."
+        }))
+        
+        # Log the current state of survey submissions
+        print(f"[INFO] Survey submission state - User1: {survey_submitted[user1]}, User2: {survey_submitted[user2]}")
+        
+    except Exception as e:
+        print(f"[ERROR] Failed to store survey: {e}")
+        # Don't mark as submitted if there was an error
+        survey_submitted[sender] = False
 
 async def handle_message(conn, conversation_id, sender, receiver, message):
     """Handle message translation and storage."""
