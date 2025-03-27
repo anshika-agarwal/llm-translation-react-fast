@@ -155,6 +155,7 @@ function App() {
           setConversationId(data.conversation_id);
           console.log(data.message);
         } else if (data.type === "surveyReceived") {
+          // Only redirect after receiving confirmation that both surveys are submitted
           setShowSurvey(false);
           setSurveyCompleted(true);
           alert(getText('thankYouMessage'));
@@ -181,7 +182,8 @@ function App() {
       ws.onclose = (event) => {
         console.log("WebSocket closed with code:", event.code);
         console.log("Close reason:", event.reason);
-        if (!isPaired) {
+        // Only close the popup if we're not paired or if we've completed the survey
+        if (!isPaired || surveyCompleted) {
           setShowChatPartnerPopup(false);
         }
       };
