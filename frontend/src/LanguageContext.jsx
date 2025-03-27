@@ -5,18 +5,43 @@ const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
   const [displayLanguage, setDisplayLanguage] = useState('english');
+  const [prolificPid, setProlificPid] = useState(null);
+  const [studyId, setStudyId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
 
   useEffect(() => {
-    // Extract LANG from URL parameters
+    // Extract parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Handle LANG parameter
     const lang = urlParams.get('LANG');
     if (lang) {
-      // Convert to lowercase and remove any curly braces
-      const cleanLang = lang.toLowerCase().replace(/[{}]/g, '');
+      // Convert to lowercase and remove any curly braces or whitespace
+      const cleanLang = lang.toLowerCase().replace(/[{}]/g, '').trim();
       // Only set if it's a supported language
       if (translationData[cleanLang]) {
         setDisplayLanguage(cleanLang);
+      } else {
+        console.warn(`Unsupported language: ${lang}. Defaulting to English.`);
       }
+    }
+
+    // Handle PROLIFIC_PID parameter
+    const pid = urlParams.get('PROLIFIC_PID');
+    if (pid) {
+      setProlificPid(pid);
+    }
+
+    // Handle STUDY_ID parameter
+    const study = urlParams.get('STUDY_ID');
+    if (study) {
+      setStudyId(study);
+    }
+
+    // Handle SESSION_ID parameter
+    const session = urlParams.get('SESSION_ID');
+    if (session) {
+      setSessionId(session);
     }
   }, []);
 
@@ -37,7 +62,10 @@ export function LanguageProvider({ children }) {
     getText,
     formatText,
     language: displayLanguage,
-    translations: translationData
+    translations: translationData,
+    prolificPid,
+    studyId,
+    sessionId
   };
 
   return (
