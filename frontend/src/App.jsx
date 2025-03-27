@@ -156,8 +156,11 @@ function App() {
           console.log(data.message);
         } else if (data.type === "surveyReceived") {
           console.log("Survey submission confirmed");
-          // Don't redirect immediately - wait for both surveys to be submitted
-          // The backend will close the connection when both surveys are submitted
+          // Show thank you message and redirect immediately
+          setShowSurvey(false);
+          setSurveyCompleted(true);
+          alert(getText('thankYouMessage'));
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=CGX95L68";
         } else if (data.type === "waitingRoomTimeout") {
           setShowChatPartnerPopup(false);
           setIsWaiting(false);
@@ -183,13 +186,6 @@ function App() {
         // Only close the popup if we're not paired or if we've completed the survey
         if (!isPaired || surveyCompleted) {
           setShowChatPartnerPopup(false);
-        }
-        // If we're in the survey phase and the connection is closed, it means both surveys were submitted
-        if (showSurvey) {
-          setShowSurvey(false);
-          setSurveyCompleted(true);
-          alert(getText('thankYouMessage'));
-          window.location.href = "https://app.prolific.com/submissions/complete?cc=CGX95L68";
         }
       };
 
