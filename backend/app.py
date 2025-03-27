@@ -582,7 +582,7 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
         }))
         
         # Log the current state of survey submissions
-        print(f"[INFO] Survey submission state - User1: {survey_submitted[user1]}, User2: {survey_submitted[user2]}")
+        print(f"[INFO] Survey submission state - Sender: {survey_submitted[sender]}")
         
     except Exception as e:
         print(f"[ERROR] Failed to store survey: {e}")
