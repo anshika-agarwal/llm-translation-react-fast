@@ -201,16 +201,6 @@ function App() {
     }, 3000);
   };
 
-  // End the chat
-  const endChat = () => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      console.log("Sending endChat message");
-      socketRef.current.send(JSON.stringify({ type: "endChat" }));
-    } else {
-      console.error("WebSocket is not open; cannot send endChat message.");
-    }
-  };
-
   // Submit survey responses
   const submitSurvey = () => {
     const requiredFields = [
@@ -330,10 +320,6 @@ function App() {
               />
               <button onClick={sendMessage}>{getText('sendButton')}</button>
             </div>
-
-            <button className="button-primary end-chat-btn" onClick={endChat}>
-              {getText('endChatButton')}
-            </button>
           </div>
         )}
 
