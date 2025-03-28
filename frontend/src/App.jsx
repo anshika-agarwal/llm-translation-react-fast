@@ -106,93 +106,91 @@ function App() {
     console.log("Attempting to find chat partner...");
     setShowChatPartnerPopup(true);
 
-    // Close existing connection if any
-    if (socketRef.current) {
-      socketRef.current.close();
-      socketRef.current = null;
-    }
-
-    console.log("Creating new WebSocket connection...");
-    const ws = new WebSocket('ws://34.219.101.222:8000/ws');
-    
-    ws.onopen = () => {
-      console.log("WebSocket connection opened successfully");
-      const data = {
-        type: "language",
-        language: displayLanguage,
-        prolific_pid: prolificPid,
-        study_id: studyId,
-        session_id: sessionId
+    if (!socketRef.current || socketRef.current.readyState === WebSocket.CLOSED) {
+      console.log("Creating new WebSocket connection...");
+      const ws = new WebSocket('ws://34.219.101.222:8000/ws');
+      
+      ws.onopen = () => {
+        console.log("WebSocket connection opened successfully");
+        const data = {
+          type: "language",
+          language: displayLanguage,
+          prolific_pid: prolificPid,
+          study_id: studyId,
+          session_id: sessionId
+        };
+        console.log("Sending initial data:", data);
+        ws.send(JSON.stringify(data));
       };
-      console.log("Sending initial data:", data);
-      ws.send(JSON.stringify(data));
-    };
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "paired") {
-        setIsPaired(true);
-        setShowChat(true);
-        setShowChatPartnerPopup(false);
-        setConversationId(data.conversation_id);
-        // Get the conversation starter from translations using the index
-        const starterIndex = data.starter_index;
-        const currentLanguage = language.toLowerCase();
-        const starter = translations[currentLanguage].conversationStarters[starterIndex];
-        setConversationStarter(starter);
-        console.log(data.message);
-      } else if (data.type === "timer") {
-        const minutes = Math.floor(data.remaining_time / 60);
-        const seconds = data.remaining_time % 60;
-        setTimer(`${minutes}:${seconds.toString().padStart(2, "0")}`);
-      } else if (data.type === "message") {
-        setMessages((prev) => [...prev, { text: data.text, sender: "partner" }]);
-        setIsPartnerTyping(false);
-      } else if (data.type === "typing") {
-        handleTypingStatus(data.status);
-      } else if (data.type === "survey" || data.type === "expired") {
-        setShowChat(false);
-        setShowSurvey(true);
-        setConversationId(data.conversation_id);
-        console.log(data.message);
-      } else if (data.type === "surveyCompleted") {
-        console.log("Survey submission confirmed");
-        // Show thank you message and redirect immediately for this user
-        setShowSurvey(false);
-        setSurveyCompleted(true);
-        alert(getText('thankYouMessage'));
-        window.location.href = "https://app.prolific.com/submissions/complete?cc=C18NAU1C";
-      } else if (data.type === "waitingRoomTimeout") {
-        setShowChatPartnerPopup(false);
-        setIsWaiting(false);
-        setWaitStartTime(null);
-        setElapsedTime(0);
-        // Clean up WebSocket connection
-        if (socketRef.current) {
-          socketRef.current.close();
-          socketRef.current = null;
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "paired") {
+          setIsPaired(true);
+          setShowChat(true);
+          setShowChatPartnerPopup(false);
+          setConversationId(data.conversation_id);
+          // Get the conversation starter from translations using the index
+          const starterIndex = data.starter_index;
+          const currentLanguage = language.toLowerCase();
+          const starter = translations[currentLanguage].conversationStarters[starterIndex];
+          setConversationStarter(starter);
+          console.log(data.message);
+        } else if (data.type === "timer") {
+          const minutes = Math.floor(data.remaining_time / 60);
+          const seconds = data.remaining_time % 60;
+          setTimer(`${minutes}:${seconds.toString().padStart(2, "0")}`);
+        } else if (data.type === "message") {
+          setMessages((prev) => [...prev, { text: data.text, sender: "partner" }]);
+          setIsPartnerTyping(false);
+        } else if (data.type === "typing") {
+          handleTypingStatus(data.status);
+        } else if (data.type === "survey" || data.type === "expired") {
+          setShowChat(false);
+          setShowSurvey(true);
+          setConversationId(data.conversation_id);
+          console.log(data.message);
+        } else if (data.type === "surveyCompleted") {
+          console.log("Survey submission confirmed");
+          // Show thank you message and redirect immediately for this user
+          setShowSurvey(false);
+          setSurveyCompleted(true);
+          alert(getText('thankYouMessage'));
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=C18NAU1C";
+        } else if (data.type === "waitingRoomTimeout") {
+          setShowChatPartnerPopup(false);
+          setIsWaiting(false);
+          setWaitStartTime(null);
+          setElapsedTime(0);
+          // Clean up WebSocket connection
+          if (socketRef.current) {
+            socketRef.current.close();
+            socketRef.current = null;
+          }
+          alert(getText('timeoutMessage'));
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=CSNW5H07";
         }
-        alert(getText('timeoutMessage'));
-        window.location.href = "https://app.prolific.com/submissions/complete?cc=CSNW5H07";
-      }
-    };
+      };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-      alert(getText('serverErrorMessage'));
-      setShowChatPartnerPopup(false);
-    };
-
-    ws.onclose = (event) => {
-      console.log("WebSocket closed with code:", event.code);
-      console.log("Close reason:", event.reason);
-      // Only close the popup if we're not paired or if we've completed the survey
-      if (!isPaired || surveyCompleted) {
+      ws.onerror = (error) => {
+        console.error("WebSocket Error:", error);
+        alert(getText('serverErrorMessage'));
         setShowChatPartnerPopup(false);
-      }
-    };
+      };
 
-    socketRef.current = ws;
+      ws.onclose = (event) => {
+        console.log("WebSocket closed with code:", event.code);
+        console.log("Close reason:", event.reason);
+        // Only close the popup if we're not paired or if we've completed the survey
+        if (!isPaired || surveyCompleted) {
+          setShowChatPartnerPopup(false);
+        }
+      };
+
+      socketRef.current = ws;
+    } else {
+      console.log("WebSocket already exists with readyState:", socketRef.current.readyState);
+    }
   };
 
   // Send chat message
@@ -244,35 +242,7 @@ function App() {
     }
 
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
-      // If connection is lost but we have a survey to submit, try to reconnect once
-      if (!socketRef.current || socketRef.current.readyState === WebSocket.CLOSED) {
-        console.log("Connection lost, attempting to reconnect...");
-        findPair(); // This will create a new connection
-        // Wait a short time for the connection to establish
-        setTimeout(() => {
-          if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-            const surveyData = {
-              type: "survey",
-              engagementRating,
-              friendlinessRating,
-              overallRating,
-              continueChat,
-              chatPartnerType,
-              chatReasoningText,
-              ...(chatPartnerType === "real" && {
-                isNativeSpeaker,
-                nativeSpeakerReason
-              })
-            };
-            console.log("Submitting survey data after reconnection:", surveyData);
-            socketRef.current.send(JSON.stringify(surveyData));
-          } else {
-            alert("Unable to reconnect to the server. Please try refreshing the page.");
-          }
-        }, 2000); // Wait 2 seconds for reconnection
-      } else {
-        alert("Connection to the server has been lost. Please try refreshing the page.");
-      }
+      alert("Connection to the server has been lost. Your survey cannot be submitted.");
       return;
     }
 
@@ -292,6 +262,7 @@ function App() {
 
     console.log("Submitting survey data:", surveyData);
     socketRef.current.send(JSON.stringify(surveyData));
+    // Note: We no longer close the survey here - we wait for the surveyReceived message
   };
 
   const formatTime = (seconds) => {

@@ -101,10 +101,10 @@ async def safe_receive(websocket: WebSocket):
             if "once a disconnect message has been received" in str(e):
                 print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} already disconnected.")
                 remove_user_from_active(websocket)
-                return None
+                break
             else:
                 print(f"[ERROR] Runtime error while receiving message: {e}")
-                return None
+            return None
         except Exception as e:
             print(f"[ERROR] Unexpected error while receiving message: {e}")
             return None
@@ -495,10 +495,6 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
             
         # Determine if sender is user1 or user2
         sender_uuid = websocket_to_uuid.get(sender)
-        if not sender_uuid:
-            print(f"[ERROR] No UUID found for sender in conversation {conversation_id}")
-            return
-            
         is_user1 = sender_uuid == user1_id
         
         # Now check existing survey submissions
@@ -517,13 +513,7 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
         elif not is_user1 and not user2_postsurvey:
             column = "user2_postsurvey"
         else:
-            print(f"[WARNING] Survey already submitted for user {sender_uuid} in conversation {conversation_id}")
-            # If survey was already submitted, still send completion message
-            if survey_submitted.get(sender, False):
-                await sender.send_text(json.dumps({
-                    "type": "surveyCompleted",
-                    "message": "Your survey has been submitted successfully. You will be redirected shortly."
-                }))
+            print(f"[WARNING] Survey already submitted for this user in conversation {conversation_id}.")
             return
             
         with conn.cursor() as cursor:
@@ -533,7 +523,7 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
                 WHERE conversation_id = %s
             """, (Json(message), conversation_id))
             conn.commit()
-        print(f"[INFO] Stored survey for user {sender_uuid} in conversation {conversation_id}")
+        print(f"[INFO] Stored survey for user {sender_uuid} in conversation {conversation_id}.")
         
         # Update the survey_submitted dictionary
         survey_submitted[sender] = True
@@ -545,7 +535,7 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
         }))
         
         # Log the current state of survey submissions
-        print(f"[INFO] Survey submission state - User1: {survey_submitted.get(user1, False)}, User2: {survey_submitted.get(user2, False)}")
+        print(f"[INFO] Survey submission state - User1: {survey_submitted.get(sender, False)}, User2: {survey_submitted.get(sender, False)}")
         
     except Exception as e:
         print(f"[ERROR] Failed to store survey: {e}")
