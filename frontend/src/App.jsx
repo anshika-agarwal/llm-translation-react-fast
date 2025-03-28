@@ -156,14 +156,14 @@ function App() {
           setShowSurvey(false);
           setSurveyCompleted(true);
           alert(getText('thankYouMessage'));
-          window.location.href = "https://app.prolific.com/submissions/complete?cc=CGX95L68";
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=C18NAU1C";
         } else if (data.type === "waitingRoomTimeout") {
           setShowChatPartnerPopup(false);
           setIsWaiting(false);
           setWaitStartTime(null);
           setElapsedTime(0);
           alert(getText('timeoutMessage'));
-          window.location.href = "https://app.prolific.com/submissions/complete?cc=C1K0V0ZZ";
+          window.location.href = "https://app.prolific.com/submissions/complete?cc=CSNW5H07";
         }
       };
 
