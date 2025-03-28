@@ -32,6 +32,7 @@ function App() {
   // Refs for WebSocket and typing timeout
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   // Add state for completed survey
   const [surveyCompleted, setSurveyCompleted] = useState(false);
@@ -44,8 +45,15 @@ function App() {
   const [waitStartTime, setWaitStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
-  // Add ref for messages container
-  const messagesEndRef = useRef(null);
+  // Function to scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Effect to scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Function to scroll to top
   const scrollToTop = () => {
@@ -89,16 +97,6 @@ function App() {
     }
     return () => clearInterval(intervalId);
   }, [waitStartTime, isWaiting]);
-
-  // Function to scroll to bottom
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Effect to scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   // Function to initiate a chat (creates a WebSocket connection)
   const findPair = async () => {
@@ -321,7 +319,6 @@ function App() {
                   <span></span>
                 </div>
               )}
-              {/* Add invisible div for scrolling */}
               <div ref={messagesEndRef} />
             </div>
 
