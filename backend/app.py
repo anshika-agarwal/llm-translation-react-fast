@@ -123,21 +123,22 @@ def remove_user_from_active(user: WebSocket):
     # Remove from active users
     if user in active_users:
         partner = active_users.pop(user, None)
-        if partner:
-            active_users.pop(partner, None)
-            print(f"[INFO] Removed users {websocket_to_uuid.get(user)} and {websocket_to_uuid.get(partner)} from active_users.")
+        # Only remove partner if they're not in active_users (meaning they've already disconnected)
+        if partner and partner not in active_users:
+            print(f"[INFO] Both users {websocket_to_uuid.get(user)} and {websocket_to_uuid.get(partner)} have disconnected.")
+        else:
+            print(f"[INFO] User {websocket_to_uuid.get(user)} disconnected. Partner still active.")
     
     # Remove from waiting room
     waiting_room[:] = [(w, lang, join_time) for w, lang, join_time in waiting_room if w != user]
     
     # Clean up other mappings
     user_languages.pop(user, None)
-
-    print(f"[INFO] Cleaning up all data for user {websocket_to_uuid.get(user, 'unknown')}")
-
     websocket_to_uuid.pop(user, None)
     websocket_locks.pop(user, None)
-    
+
+    print(f"[INFO] Cleaned up data for user {websocket_to_uuid.get(user, 'unknown')}")
+
 async def translate_message(message: str, source_language: str, target_language: str) -> str:
     """
     Translate the given message using the OpenAI API if needed.
