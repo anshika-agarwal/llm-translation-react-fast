@@ -257,39 +257,44 @@ async def cleanup_waiting_room():
     # Sort waiting room by join time to ensure FIFO order
     waiting_room.sort(key=lambda x: x[2])
     
-    # Try to make any possible cross-language matches
-    waiting_room_copy = waiting_room.copy()
-    for ws1, lang1, _ in waiting_room_copy:
-        if ws1 not in waiting_room:  # Skip if already matched
+    # Create a list of users to remove to avoid modifying while iterating
+    users_to_remove = set()
+    
+    # Try to make any possible cross-language matches first
+    for i, (ws1, lang1, _) in enumerate(waiting_room):
+        if ws1 in users_to_remove:
             continue
-        for ws2, lang2, _ in waiting_room_copy:
-            if ws2 not in waiting_room or ws1 == ws2:  # Skip if already matched or same user
+            
+        for j, (ws2, lang2, _) in enumerate(waiting_room[i+1:], i+1):
+            if ws2 in users_to_remove:
                 continue
+                
             if (lang1, lang2) in PRIORITY_PAIRS:
                 # Set up the cross-language pair
                 active_users[ws1] = ws2
                 active_users[ws2] = ws1
-                # Remove both users from waiting room
-                waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
-                                 if w not in (ws1, ws2)]
+                users_to_remove.add(ws1)
+                users_to_remove.add(ws2)
                 break
     
     # Handle remaining users who have waited MAX_WAIT_TIME
-    remaining_users = [
-        (ws, lang) for ws, lang, join_time in waiting_room 
-        if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME
-    ]
+    for ws, lang, join_time in waiting_room:
+        if ws in users_to_remove:
+            continue
+            
+        if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
+            users_to_remove.add(ws)
+            participant_id = websocket_to_uuid.get(ws)
+            if participant_id:
+                await notify_prolific_overflow(participant_id)
+            await ws.send_text(json.dumps({
+                "type": "waitingRoomTimeout",
+                "message": "Sorry, we could not pair you at this time. Please try again later. You will be redirected to return."
+            }))
+            await safe_close(ws)
     
-    for ws, lang in remaining_users:
-        participant_id = websocket_to_uuid.get(ws)
-        if participant_id:
-            await notify_prolific_overflow(participant_id)
-        await ws.send_text(json.dumps({
-            "type": "waitingRoomTimeout",
-            "message": "Sorry, we could not pair you at this time. Please try again later. You will be redirected to return."
-        }))
-        await safe_close(ws)
-        waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w != ws]
+    # Remove all users that need to be removed
+    waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w not in users_to_remove]
 
 async def pair_users():
     """Pairs users based on language preferences and waiting time."""
@@ -608,15 +613,15 @@ async def websocket_endpoint(websocket: WebSocket):
             print(f"[INFO] Assigned {'Prolific' if prolific_pid else 'Generated'} ID {user_id} to WebSocket.")
             
             user_languages[websocket] = data["language"]
+            join_time = datetime.now()
             # Add to waiting room with current timestamp
-            waiting_room.append((websocket, data["language"], datetime.now()))
+            waiting_room.append((websocket, data["language"], join_time))
             print(f"[INFO] User {user_id} selected language: {data['language']}.")
             
             # Keep trying to pair until either paired or timeout
-            start_time = datetime.now()
             while websocket not in conversation_mapping:
                 # Check if we've exceeded MAX_WAIT_TIME
-                if (datetime.now() - start_time).total_seconds() >= MAX_WAIT_TIME:
+                if (datetime.now() - join_time).total_seconds() >= MAX_WAIT_TIME:
                     print(f"[INFO] No priority matches found for {user_id} after waiting {MAX_WAIT_TIME} seconds.")
                     await websocket.send_text(json.dumps({
                         "type": "waitingRoomTimeout",
@@ -631,7 +636,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 # If still not paired, wait before trying again
                 if websocket not in conversation_mapping:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.5)  # Reduced sleep time to be more responsive
             
             conversation_id = conversation_mapping.get(websocket)
             partner = active_users.get(websocket)
