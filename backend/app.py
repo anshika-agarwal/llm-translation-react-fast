@@ -254,13 +254,9 @@ async def cleanup_waiting_room():
     current_time = datetime.now()
     global waiting_room
     
-    # Create a list of users to remove to avoid modifying while iterating
-    users_to_remove = set()
-    
     # Check each user's wait time
     for ws, lang, join_time in waiting_room:
         if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
-            users_to_remove.add(ws)
             participant_id = websocket_to_uuid.get(ws)
             if participant_id:
                 await notify_prolific_overflow(participant_id)
@@ -269,16 +265,13 @@ async def cleanup_waiting_room():
                 "message": "Sorry, we could not pair you at this time. Please try again later. You will be redirected to return."
             }))
             await safe_close(ws)
-    
-    # Remove all users that need to be removed
-    waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w not in users_to_remove]
+            # Remove this user from waiting room
+            waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w != ws]
+            return  # Exit after removing one user to avoid modifying while iterating
 
 async def pair_users():
     """Pairs users based on language preferences."""
     global waiting_room, active_users, conversation_mapping
-    
-    # Clean up expired participants
-    await cleanup_waiting_room()
     
     # Try to pair remaining participants
     for i, (ws1, lang1, _) in enumerate(waiting_room):
