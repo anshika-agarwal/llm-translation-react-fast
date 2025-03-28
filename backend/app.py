@@ -368,9 +368,9 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     """Central chat session that reads messages from both users."""
     conn = None
     survey_submitted = {user1: False, user2: False}
+    chat_ended = False
     try:
         conn = get_db_connection()
-        chat_ended = False
         # Record conversation start time
         conversation_start_times[conversation_id] = datetime.now()
         
@@ -432,10 +432,17 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                             
                             # Check if both surveys are submitted
                             if all(survey_submitted.values()):
-                                print("[INFO] Both surveys submitted. Waiting for final messages before closing.")
-                                # Give a small delay to ensure all messages are processed
-                                await asyncio.sleep(1)
-                                print("[INFO] Closing WebSocket connections.")
+                                print("[INFO] Both surveys submitted. Cleaning up connections.")
+                                # Cancel any pending tasks
+                                for t in pending:
+                                    t.cancel()
+                                # Send final message to both users before closing
+                                final_message = json.dumps({
+                                    "type": "allSurveysSubmitted",
+                                    "message": "Both surveys have been submitted. Thank you for participating!"
+                                })
+                                await asyncio.gather(user1.send_text(final_message), user2.send_text(final_message))
+                                # Close WebSocket connections
                                 await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
                                 return
 
@@ -526,7 +533,7 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
         # Update the survey_submitted dictionary
         survey_submitted[sender] = True
         
-        # Send confirmation to the sender
+        # Send confirmation only to the sender
         await sender.send_text(json.dumps({
             "type": "surveyReceived",
             "message": "Your survey has been submitted successfully."
