@@ -4,12 +4,12 @@ const translations = {
     title: "Welcome to Chat Room!",
     
     // System Messages
-    thankYouMessage: "Thank you for your feedback! You will be redirected to the start page.",
+    thankYouMessage: "Thank you for your feedback! You will be redirected to the completion page.",
     noPartnerFoundMessage: "Sorry we could not pair you at this time. Please try again later",
     connectionLostMessage: "Connection to the server has been lost. Your survey cannot be submitted.",
     fillAllFieldsMessage: "Please answer all the survey questions before submitting.",
     serverErrorMessage: "Connection error. Please try again.",
-    timeoutMessage: "Sorry, we could not pair you at this time. You will be redirected to return.",
+    timeoutMessage: "Sorry, we could not pair you at this time. You will be redirected to return and please try again later.",
     partnerDisconnectedMessage: "Your partner disconnected. Please complete your survey before closing.",
     
     // Language Selection
@@ -126,7 +126,7 @@ const translations = {
     connectionLostMessage: "Se ha perdido la conexión con el servidor. Tu encuesta no puede ser enviada.",
     fillAllFieldsMessage: "Por favor responde todas las preguntas de la encuesta antes de enviar.",
     serverErrorMessage: "Error de conexión. Por favor, inténtalo de nuevo.",
-    timeoutMessage: "Lo sentimos, no pudimos encontrar un compañero en este momento. Serás redirigido para volver.",
+    timeoutMessage: "Lo sentimos, no pudimos encontrar un compañero en este momento. Serás redirigido para volver y por favor inténtalo de nuevo más tarde.",
     partnerDisconnectedMessage: "Tu compañero se desconectó. Por favor, completa tu encuesta antes de cerrar.",
     
     // Language Selection
