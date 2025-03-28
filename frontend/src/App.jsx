@@ -169,6 +169,11 @@ function App() {
           }
           alert(getText('timeoutMessage'));
           window.location.href = "https://app.prolific.com/submissions/complete?cc=CSNW5H07";
+        } else if (data.type === "info") {
+          // Handle partner disconnection notification
+          console.log("Partner status update:", data.message);
+          // Show the translated message to the user
+          alert(getText('partnerDisconnectedMessage'));
         }
       };
 

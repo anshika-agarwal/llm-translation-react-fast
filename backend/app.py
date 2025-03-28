@@ -101,7 +101,6 @@ async def safe_receive(websocket: WebSocket):
             if "once a disconnect message has been received" in str(e):
                 print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} already disconnected.")
                 remove_user_from_active(websocket)
-                break
             else:
                 print(f"[ERROR] Runtime error while receiving message: {e}")
             return None
@@ -369,48 +368,59 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     """Central chat session that reads messages from both users."""
     conn = None
     survey_submitted = {user1: False, user2: False}
+    user_disconnected = {user1: False, user2: False}
     chat_ended = False
     try:
         conn = get_db_connection()
-        # Record conversation start time
         conversation_start_times[conversation_id] = datetime.now()
-        
-        while not chat_ended or not all(survey_submitted.values()):
-            # Create concurrent receive tasks for both users
-            user1_task = asyncio.create_task(safe_receive(user1))
-            user2_task = asyncio.create_task(safe_receive(user2))
-            
+
+        while not all(survey_submitted.values()) and not all(user_disconnected.values()):
+            # Skip receiving if both users are gone
+            if user1 in active_users:
+                user1_task = asyncio.create_task(safe_receive(user1))
+            else:
+                user1_task = None
+                user_disconnected[user1] = True
+
+            if user2 in active_users:
+                user2_task = asyncio.create_task(safe_receive(user2))
+            else:
+                user2_task = None
+                user_disconnected[user2] = True
+
+            tasks = [t for t in [user1_task, user2_task] if t is not None]
+            if not tasks:
+                break  # No one left to receive from
+
             try:
-                done, pending = await asyncio.wait(
-                    [user1_task, user2_task],
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-                
+                done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
                 for task in done:
                     try:
                         message_text = task.result()
+                        sender = user1 if task == user1_task else user2
+                        receiver = user2 if sender == user1 else user1
+
                         if message_text is None:
+                            user_disconnected[sender] = True
                             continue
+
                         message = json.loads(message_text)
                         if "type" not in message:
                             print(f"[ERROR] Missing 'type' in message: {message}")
                             continue
 
-                        # Process message based on type
                         if message["type"] == "endChat":
                             chat_ended = True
                             if conversation_id in chat_timers:
                                 chat_timers[conversation_id].cancel()
                                 del chat_timers[conversation_id]
-                            
-                            # Calculate conversation length
+
                             end_time = datetime.now()
                             start_time = conversation_start_times.get(conversation_id, end_time)
                             duration = (end_time - start_time).total_seconds()
                             minutes = int(duration // 60)
                             seconds = int(duration % 60)
-                            
-                            # Update database with conversation length
+
                             with conn.cursor() as cursor:
                                 cursor.execute("""
                                     UPDATE conversations
@@ -418,64 +428,67 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                                     WHERE conversation_id = %s
                                 """, (f"{minutes}:{seconds:02d}", conversation_id))
                                 conn.commit()
-                            
+
                             survey_prompt = json.dumps({
                                 "type": "survey",
                                 "conversation_id": conversation_id,
                                 "message": f"Conversation {conversation_id} has ended."
                             })
-                            await asyncio.gather(user1.send_text(survey_prompt), user2.send_text(survey_prompt))
+                            await asyncio.gather(
+                                *(user.send_text(survey_prompt) for user in [user1, user2]
+                                  if not user_disconnected[user])
+                            )
                             print("[INFO] Sent survey prompts to both users.")
 
                         elif message["type"] == "survey":
-                            sender = user1 if task == user1_task else user2
                             await handle_survey_submission(conn, conversation_id, sender, message, survey_submitted)
-                            
-                            # Check if both surveys are submitted
-                            if all(survey_submitted.values()):
-                                print("[INFO] Both surveys submitted. Cleaning up connections.")
-                                # Cancel any pending tasks
-                                for t in pending:
-                                    t.cancel()
-                                # Close WebSocket connections
-                                await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
-                                return
 
                         elif message["type"] in ["typing", "stopTyping"]:
-                            target_user = user2 if task == user1_task else user1
-                            await target_user.send_text(json.dumps({
-                                "type": "typing",
-                                "status": "typing" if message["type"] == "typing" else "stopped"
-                            }))
+                            if not user_disconnected[receiver]:
+                                await receiver.send_text(json.dumps({
+                                    "type": "typing",
+                                    "status": "typing" if message["type"] == "typing" else "stopped"
+                                }))
 
                         elif message["type"] == "message" and "text" in message:
-                            sender = user1 if task == user1_task else user2
-                            receiver = user2 if sender == user1 else user1
-                            await handle_message(conn, conversation_id, sender, receiver, message)
+                            if not user_disconnected[receiver]:
+                                await handle_message(conn, conversation_id, sender, receiver, message)
 
                         else:
                             print(f"[WARNING] Unhandled message type: {message}")
                     except Exception as e:
                         print(f"[ERROR] Exception processing message: {e}")
-                
+
                 for task in pending:
                     task.cancel()
-                    
+
             except asyncio.CancelledError:
                 print(f"[INFO] Chat session cancelled for conversation {conversation_id}")
                 break
-                
+
     except Exception as e:
         print(f"[ERROR] Exception in start_chat: {e}")
     finally:
         if conn:
             conn.close()
-        # Only close WebSocket connections if both surveys are submitted
-        if all(survey_submitted.values()):
-            print("[INFO] Both surveys submitted. Closing WebSocket connections.")
-            await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
-        else:
-            print(f"[WARNING] Chat session ended but not all surveys were submitted. User1: {survey_submitted[user1]}, User2: {survey_submitted[user2]}")
+        chat_sessions.pop(conversation_id, None)
+
+        # Let users know if the other person disconnected
+        for user in [user1, user2]:
+            if not survey_submitted[user] and not user_disconnected[user]:
+                try:
+                    await user.send_text(json.dumps({
+                        "type": "info",
+                        "message": "Your partner disconnected. Please complete your survey before closing."
+                    }))
+                except:
+                    pass
+
+        if all(survey_submitted.values()) or all(user_disconnected.values()):
+            print(f"[INFO] Final cleanup for conversation {conversation_id}")
+            await asyncio.gather(
+                *(safe_close(user) for user in [user1, user2] if not user_disconnected[user])
+            )
 
 async def handle_survey_submission(conn, conversation_id, sender, message, survey_submitted):
     """Handle survey submission and database updates."""
