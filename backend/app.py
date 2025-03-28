@@ -250,38 +250,15 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
     return None
 
 async def cleanup_waiting_room():
-    """Remove participants who have waited too long and try to pair them with same-language users."""
+    """Remove participants who have waited too long."""
     current_time = datetime.now()
-    global waiting_room, active_users
-    
-    # Sort waiting room by join time to ensure FIFO order
-    waiting_room.sort(key=lambda x: x[2])
+    global waiting_room
     
     # Create a list of users to remove to avoid modifying while iterating
     users_to_remove = set()
     
-    # Try to make any possible cross-language matches first
-    for i, (ws1, lang1, _) in enumerate(waiting_room):
-        if ws1 in users_to_remove:
-            continue
-            
-        for j, (ws2, lang2, _) in enumerate(waiting_room[i+1:], i+1):
-            if ws2 in users_to_remove:
-                continue
-                
-            if (lang1, lang2) in PRIORITY_PAIRS:
-                # Set up the cross-language pair
-                active_users[ws1] = ws2
-                active_users[ws2] = ws1
-                users_to_remove.add(ws1)
-                users_to_remove.add(ws2)
-                break
-    
-    # Handle remaining users who have waited MAX_WAIT_TIME
+    # Check each user's wait time
     for ws, lang, join_time in waiting_room:
-        if ws in users_to_remove:
-            continue
-            
         if (current_time - join_time).total_seconds() >= MAX_WAIT_TIME:
             users_to_remove.add(ws)
             participant_id = websocket_to_uuid.get(ws)
@@ -297,78 +274,72 @@ async def cleanup_waiting_room():
     waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w not in users_to_remove]
 
 async def pair_users():
-    """Pairs users based on language preferences and waiting time."""
+    """Pairs users based on language preferences."""
     global waiting_room, active_users, conversation_mapping
     
     # Clean up expired participants
     await cleanup_waiting_room()
     
-    # Sort waiting room by join time to ensure FIFO order
-    waiting_room.sort(key=lambda x: x[2])  # Sort by join_time
-    
-    # Create a copy of the waiting room to iterate over
-    waiting_room_copy = waiting_room.copy()
-    
     # Try to pair remaining participants
-    for websocket, language, join_time in waiting_room_copy:
-        # Skip if this websocket is no longer in the waiting room
-        if not any(w == websocket for w, _, _ in waiting_room):
-            continue
-            
-        match = find_best_match(websocket, language)
-        if match:
-            # Set up the pair
-            active_users[websocket] = match
-            active_users[match] = websocket
-            
-            # Get persistent UUIDs
-            user1_id = websocket_to_uuid.get(websocket)
-            user2_id = websocket_to_uuid.get(match)
-            
-            # Get a random conversation starter index
-            starter_index = get_conversation_starter()
-            print(f"[DEBUG] Selected conversation starter index: {starter_index}")
-            
-            try:
-                conn = get_db_connection()
-                with conn.cursor() as cursor:
-                    cursor.execute("""
-                        INSERT INTO conversations (
-                            user1_id, user2_id, user1_lang, user2_lang, "group", model, conversation_history, convo_starter
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                        RETURNING conversation_id
-                    """, (
-                        user1_id,
-                        user2_id,
-                        user_languages[websocket],
-                        user_languages[match],
-                        "control" if user_languages[websocket].lower() == user_languages[match].lower() else "experiment",
-                        'gpt-4o',
-                        Json([]),
-                        starter_index
-                    ))
-                    conversation_id = cursor.fetchone()[0]
-                    conn.commit()
-                print(f"[INFO] Paired users {user1_id} and {user2_id} in conversation {conversation_id}.")
-                conversation_mapping[websocket] = conversation_id
-                conversation_mapping[match] = conversation_id
+    for i, (ws1, lang1, _) in enumerate(waiting_room):
+        for j, (ws2, lang2, _) in enumerate(waiting_room[i+1:], i+1):
+            if (lang1, lang2) in PRIORITY_PAIRS:
+                # Set up the pair
+                active_users[ws1] = ws2
+                active_users[ws2] = ws1
                 
-                pairing_message = json.dumps({
-                    "type": "paired",
-                    "message": "You are now paired. Start chatting!",
-                    "conversation_id": conversation_id,
-                    "starter_index": starter_index
-                })
-                await asyncio.gather(websocket.send_text(pairing_message), match.send_text(pairing_message))
-                # Start chat timer for this conversation
-                timer_task = asyncio.create_task(chat_timer_task(websocket, match, conversation_id))
-                chat_timers[conversation_id] = timer_task
+                # Get persistent UUIDs
+                user1_id = websocket_to_uuid.get(ws1)
+                user2_id = websocket_to_uuid.get(ws2)
                 
-            except Exception as e:
-                print(f"[ERROR] Failed to pair users or insert conversation into DB: {e}")
-            finally:
-                if conn:
-                    conn.close()
+                # Get a random conversation starter index
+                starter_index = get_conversation_starter()
+                print(f"[DEBUG] Selected conversation starter index: {starter_index}")
+                
+                try:
+                    conn = get_db_connection()
+                    with conn.cursor() as cursor:
+                        cursor.execute("""
+                            INSERT INTO conversations (
+                                user1_id, user2_id, user1_lang, user2_lang, "group", model, conversation_history, convo_starter
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            RETURNING conversation_id
+                        """, (
+                            user1_id,
+                            user2_id,
+                            user_languages[ws1],
+                            user_languages[ws2],
+                            "control" if user_languages[ws1].lower() == user_languages[ws2].lower() else "experiment",
+                            'gpt-4o',
+                            Json([]),
+                            starter_index
+                        ))
+                        conversation_id = cursor.fetchone()[0]
+                        conn.commit()
+                    print(f"[INFO] Paired users {user1_id} and {user2_id} in conversation {conversation_id}.")
+                    conversation_mapping[ws1] = conversation_id
+                    conversation_mapping[ws2] = conversation_id
+                    
+                    # Remove both users from waiting room
+                    waiting_room[:] = [(w, l, t) for w, l, t in waiting_room if w not in (ws1, ws2)]
+                    
+                    pairing_message = json.dumps({
+                        "type": "paired",
+                        "message": "You are now paired. Start chatting!",
+                        "conversation_id": conversation_id,
+                        "starter_index": starter_index
+                    })
+                    await asyncio.gather(ws1.send_text(pairing_message), ws2.send_text(pairing_message))
+                    # Start chat timer for this conversation
+                    timer_task = asyncio.create_task(chat_timer_task(ws1, ws2, conversation_id))
+                    chat_timers[conversation_id] = timer_task
+                    return  # Exit after successful pairing
+                    
+                except Exception as e:
+                    print(f"[ERROR] Failed to pair users or insert conversation into DB: {e}")
+                finally:
+                    if conn:
+                        conn.close()
 
 async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
     """Central chat session that reads messages from both users."""
@@ -636,7 +607,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 # If still not paired, wait before trying again
                 if websocket not in conversation_mapping:
-                    await asyncio.sleep(0.5)  # Reduced sleep time to be more responsive
+                    await asyncio.sleep(0.1)  # Very short sleep to be more responsive
             
             conversation_id = conversation_mapping.get(websocket)
             partner = active_users.get(websocket)
