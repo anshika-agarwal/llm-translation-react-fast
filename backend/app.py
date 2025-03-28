@@ -615,9 +615,6 @@ async def websocket_endpoint(websocket: WebSocket):
             # Keep trying to pair until either paired or timeout
             start_time = datetime.now()
             while websocket not in conversation_mapping:
-                # Try to pair immediately
-                await pair_users()
-                
                 # Check if we've exceeded MAX_WAIT_TIME
                 if (datetime.now() - start_time).total_seconds() >= MAX_WAIT_TIME:
                     print(f"[INFO] No priority matches found for {user_id} after waiting {MAX_WAIT_TIME} seconds.")
@@ -629,7 +626,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     await safe_close(websocket)
                     return
                 
-                await asyncio.sleep(1)
+                # Try to pair immediately
+                await pair_users()
+                
+                # If still not paired, wait before trying again
+                if websocket not in conversation_mapping:
+                    await asyncio.sleep(1)
             
             conversation_id = conversation_mapping.get(websocket)
             partner = active_users.get(websocket)
