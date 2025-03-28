@@ -98,7 +98,7 @@ async def safe_receive(websocket: WebSocket):
             remove_user_from_active(websocket)
             return None
         except RuntimeError as e:
-            if "Cannot call 'receive' once a disconnect message has been received" in str(e):
+            if "once a disconnect message has been received" in str(e):
                 print(f"[INFO] WebSocket {websocket_to_uuid.get(websocket, 'unknown')} already disconnected.")
                 remove_user_from_active(websocket)
             else:
