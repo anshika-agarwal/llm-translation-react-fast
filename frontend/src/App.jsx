@@ -150,17 +150,9 @@ function App() {
           setShowSurvey(true);
           setConversationId(data.conversation_id);
           console.log(data.message);
-        } else if (data.type === "surveyReceived") {
+        } else if (data.type === "surveyCompleted") {
           console.log("Survey submission confirmed");
-          // Don't close the connection or redirect yet - wait for allSurveysSubmitted
-        } else if (data.type === "allSurveysSubmitted") {
-          console.log("All surveys submitted");
-          // Clean up WebSocket connection
-          if (socketRef.current) {
-            socketRef.current.close();
-            socketRef.current = null;
-          }
-          // Show thank you message and redirect
+          // Show thank you message and redirect immediately for this user
           setShowSurvey(false);
           setSurveyCompleted(true);
           alert(getText('thankYouMessage'));

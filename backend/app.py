@@ -436,12 +436,6 @@ async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
                                 # Cancel any pending tasks
                                 for t in pending:
                                     t.cancel()
-                                # Send final message to both users before closing
-                                final_message = json.dumps({
-                                    "type": "allSurveysSubmitted",
-                                    "message": "Both surveys have been submitted. Thank you for participating!"
-                                })
-                                await asyncio.gather(user1.send_text(final_message), user2.send_text(final_message))
                                 # Close WebSocket connections
                                 await asyncio.gather(*(safe_close(user) for user in [user1, user2]))
                                 return
@@ -533,10 +527,10 @@ async def handle_survey_submission(conn, conversation_id, sender, message, surve
         # Update the survey_submitted dictionary
         survey_submitted[sender] = True
         
-        # Send confirmation only to the sender
+        # Send individual completion message to the sender
         await sender.send_text(json.dumps({
-            "type": "surveyReceived",
-            "message": "Your survey has been submitted successfully."
+            "type": "surveyCompleted",
+            "message": "Your survey has been submitted successfully. You will be redirected shortly."
         }))
         
         # Log the current state of survey submissions
