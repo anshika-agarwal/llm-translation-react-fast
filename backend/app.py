@@ -276,7 +276,7 @@ async def pair_users():
     # Try to pair remaining participants
     for i, (ws1, lang1, _) in enumerate(waiting_room):
         for j, (ws2, lang2, _) in enumerate(waiting_room[i+1:], i+1):
-            if (lang1, lang2) in PRIORITY_PAIRS:
+            if (lang1, lang2) in CONTROL_PAIRS:
                 # Set up the pair
                 active_users[ws1] = ws2
                 active_users[ws2] = ws1
