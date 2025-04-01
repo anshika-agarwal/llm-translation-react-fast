@@ -241,7 +241,7 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
     
     # Only try to find priority matches (different languages)
     for waiting_ws, waiting_lang, join_time in waiting_room:
-        if waiting_ws != websocket and (language, waiting_lang) in PRIORITY_PAIRS:
+        if waiting_ws != websocket and (language, waiting_lang) in CONTROL_PAIRS:
             # Remove the matched pair from waiting room immediately
             waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
                              if w not in (websocket, waiting_ws)]
