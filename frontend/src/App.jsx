@@ -291,13 +291,14 @@ function App() {
           )}
         </header>
 
-        {!isPaired && (
-          <div className="rating-section">
+        <div className="welcome-container">
+          <p className="research-info">{translations[language].researchStudyInfo}</p>
+          {!isPaired && (
             <button className="button-primary find-partner-btn" onClick={findPair}>
               {getText('findPartnerButton')}
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Chat Section */}
         {showChat && (
@@ -552,14 +553,6 @@ function App() {
             </div>
           </div>
         )}
-
-        <div className="welcome-container">
-          <h1>{translations[language].title}</h1>
-          <p className="research-info">{translations[language].researchStudyInfo}</p>
-          <div className="language-selector">
-            {/* Language selector content */}
-          </div>
-        </div>
       </div>
     </div>
   );

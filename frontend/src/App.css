@@ -475,9 +475,22 @@ textarea::placeholder {
 }
 
 .find-partner-btn {
-  composes: button-primary;
+  margin: 1rem auto 3rem;
+  max-width: 300px;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
   background: linear-gradient(135deg, #4B9EEB, #6366f1);
-  margin: 2rem auto 0;
+  border-radius: 2rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(14, 165, 233, 0.2);
+}
+
+.find-partner-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(14, 165, 233, 0.3);
 }
 
 .end-chat-btn {
@@ -891,17 +904,25 @@ html {
   }
 }
 
+.welcome-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
 .research-info {
   max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
+  margin: 20px auto 40px;
+  padding: 30px;
   background-color: #f8f9fa;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.8;
   color: #333;
   text-align: left;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: pre-wrap;
 }
 
 .research-info strong {
