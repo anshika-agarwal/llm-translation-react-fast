@@ -2,6 +2,7 @@ const translations = {
   english: {
     // Header
     title: "Welcome to Chat Room!",
+    researchStudyInfo: "You are invited to participate in a research study on interpersonal communication. You will be asked to chat anonymously with another user for 3 minutes and answer survey questions about your chat experience. You may be asked one of the following prompts (sourced from the Fast Friends Paradigm):\n\n1) What would constitute a \"perfect\" day for you?\n\n2) What do you value most in a friendship?\n\n3) How do you feel about your relationship with your mother?",
     
     // System Messages
     thankYouMessage: "Thank you for your feedback! You will be redirected to the completion page.",
@@ -107,7 +108,7 @@ const translations = {
     nonNativeOption: "non-native",
     
     // Messages
-    surveySubmittedMessage: "Thank you for your feedback! You will be redirected to the completion page.",
+    surveySubmittedMessage: "Thank you for your feedback! You were in fact chatting with a real person. You will be redirected to the completion page.",
     fillPresurveyMessage: "Please fill in all fields before finding a chat partner",
     conversationStarters: [
       "What would constitute a \"perfect\" day for you?",
@@ -119,9 +120,10 @@ const translations = {
   spanish: {
     // Header
     title: "Bienvenido al Chat Room!",
+    researchStudyInfo: "Estás invitado a participar en un estudio de investigación sobre comunicación interpersonal. Se te pedirá que chatees de forma anónima con otro usuario durante 3 minutos y respondas preguntas de la encuesta sobre tu experiencia de chat. Se te puede preguntar uno de los siguientes temas (tomados del Paradigma de Amigos Rápidos):\n\n1) ¿Qué constituiría un día \"perfecto\" para ti?\n\n2) ¿Qué valoras más en una amistad?\n\n3) ¿Cómo te sientes acerca de tu relación con tu madre?",
     
     // System Messages
-    thankYouMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de inicio.",
+    thankYouMessage: "¡Gracias por tus comentarios! Estabas chatando con una persona real. Serás redirigido a la página de inicio.",
     noPartnerFoundMessage: "Lo sentimos, no pudimos encontrar un compañero en este momento. Por favor, inténtalo de nuevo más tarde",
     connectionLostMessage: "Se ha perdido la conexión con el servidor. Tu encuesta no puede ser enviada.",
     fillAllFieldsMessage: "Por favor responde todas las preguntas de la encuesta antes de enviar.",

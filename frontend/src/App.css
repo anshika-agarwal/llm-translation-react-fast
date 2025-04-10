@@ -890,3 +890,21 @@ html {
     transform: translateY(-4px);
   }
 }
+
+.research-info {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  text-align: left;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.research-info strong {
+  color: #2c3e50;
+  font-weight: 600;
+}
