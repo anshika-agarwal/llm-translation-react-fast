@@ -296,19 +296,6 @@ function App() {
           )}
         </header>
 
-        <div className="welcome-container">
-          {!showSurvey && (
-            <>
-              <p className="research-info">{translations[language].researchStudyInfo}</p>
-              {!isPaired && (
-                <button className="button-primary find-partner-btn" onClick={findPair}>
-                  {getText('findPartnerButton')}
-                </button>
-              )}
-            </>
-          )}
-        </div>
-
         {/* Chat Section */}
         {showChat && (
           <div className="chat-section">
@@ -320,7 +307,6 @@ function App() {
             <div className="messages-container">
               {conversationStarter && (
                 <div className="conversation-starter">
-                  <p>{getText('conversationStarterLabel')}</p>
                   <p className="starter-question">{conversationStarter}</p>
                 </div>
               )}
@@ -352,6 +338,18 @@ function App() {
               />
               <button onClick={sendMessage}>{getText('sendButton')}</button>
             </div>
+          </div>
+        )}
+
+        {/* Welcome Container - Only show when not in chat or survey */}
+        {!showChat && !showSurvey && (
+          <div className="welcome-container">
+            <p className="research-info">{translations[language].researchStudyInfo}</p>
+            {!isPaired && (
+              <button className="button-primary find-partner-btn" onClick={findPair}>
+                {getText('findPartnerButton')}
+              </button>
+            )}
           </div>
         )}
 
