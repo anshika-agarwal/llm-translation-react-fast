@@ -139,7 +139,7 @@ function App() {
           // Get the conversation starter from translations using the index
           const starterIndex = data.starter_index;
           const currentLanguage = language.toLowerCase();
-          const starter = translations[currentLanguage].conversationStarters[starterIndex];
+          const starter = translations[currentLanguage].conversationStarters[currentLanguage][starterIndex];
           setConversationStarter(starter);
           console.log(data.message);
         } else if (data.type === "timer") {
