@@ -18,16 +18,18 @@ function App() {
   const [chatMessage, setChatMessage] = useState("");
 
   // Survey responses
+  const [comprehensionRating, setComprehensionRating] = useState("");
+  const [closenessRating, setClosenessRating] = useState("");
+  const [enjoymentRating, setEnjoymentRating] = useState("");
   const [engagementRating, setEngagementRating] = useState("");
-  const [friendlinessRating, setFriendlinessRating] = useState("");
-  const [overallRating, setOverallRating] = useState("");
-  const [sameLanguageRating, setSameLanguageRating] = useState("");
-  const [guessLanguage, setGuessLanguage] = useState("");
-  const [nativeSpeakerReason, setNativeSpeakerReason] = useState("");
-  const [continueChat, setContinueChat] = useState("");
-  const [chatPartnerType, setChatPartnerType] = useState("");
-  const [chatReasoningText, setChatReasoningText] = useState("");
-  const [isNativeSpeaker, setIsNativeSpeaker] = useState("");
+  const [listeningRating, setListeningRating] = useState("");
+  const [interestRating, setInterestRating] = useState("");
+  const [commongroundRating, setCommongroundRating] = useState("");
+  const [responsivenessRating, setResponsivenessRating] = useState("");
+  const [futureInteractionRating, setFutureInteractionRating] = useState("");
+  const [reasoningText, setReasoningText] = useState("");
+  const [partnerIdentity, setPartnerIdentity] = useState("");
+  const [identityReasoningText, setIdentityReasoningText] = useState("");
 
   // Refs for WebSocket and typing timeout
   const socketRef = useRef(null);
@@ -74,14 +76,18 @@ function App() {
       setShowChat(false);
       setShowSurvey(false);
       setMessages([]);
+      setComprehensionRating("");
+      setClosenessRating("");
+      setEnjoymentRating("");
       setEngagementRating("");
-      setFriendlinessRating("");
-      setOverallRating("");
-      setContinueChat("");
-      setChatPartnerType("");
-      setChatReasoningText("");
-      setIsNativeSpeaker("");
-      setNativeSpeakerReason("");
+      setListeningRating("");
+      setInterestRating("");
+      setCommongroundRating("");
+      setResponsivenessRating("");
+      setFutureInteractionRating("");
+      setReasoningText("");
+      setPartnerIdentity("");
+      setIdentityReasoningText("");
       setSurveyCompleted(false);
       scrollToTop();
     }
@@ -225,23 +231,21 @@ function App() {
   // Submit survey responses
   const submitSurvey = () => {
     const requiredFields = [
+      comprehensionRating,
+      closenessRating,
+      enjoymentRating,
       engagementRating,
-      friendlinessRating,
-      overallRating,
-      continueChat,
-      chatPartnerType,
-      chatReasoningText
+      listeningRating,
+      interestRating,
+      commongroundRating,
+      responsivenessRating,
+      futureInteractionRating,
+      reasoningText,
+      partnerIdentity,
+      identityReasoningText
     ];
 
-    // Only check native speaker fields if chatPartnerType is "real"
-    const nativeSpeakerFields = chatPartnerType === "real" ? [
-      isNativeSpeaker,
-      nativeSpeakerReason
-    ] : [];
-
-    const allRequiredFields = [...requiredFields, ...nativeSpeakerFields];
-
-    if (allRequiredFields.some(field => !field)) {
+    if (requiredFields.some(field => !field)) {
       alert("Please answer all the survey questions before submitting.");
       return;
     }
@@ -253,21 +257,22 @@ function App() {
 
     const surveyData = {
       type: "survey",
+      comprehensionRating,
+      closenessRating,
+      enjoymentRating,
       engagementRating,
-      friendlinessRating,
-      overallRating,
-      continueChat,
-      chatPartnerType,
-      chatReasoningText,
-      ...(chatPartnerType === "real" && {
-        isNativeSpeaker,
-        nativeSpeakerReason
-      })
+      listeningRating,
+      interestRating,
+      commongroundRating,
+      responsivenessRating,
+      futureInteractionRating,
+      reasoningText,
+      partnerIdentity,
+      identityReasoningText
     };
 
     console.log("Submitting survey data:", surveyData);
     socketRef.current.send(JSON.stringify(surveyData));
-    // Note: We no longer close the survey here - we wait for the surveyReceived message
   };
 
   const formatTime = (seconds) => {
@@ -351,6 +356,75 @@ function App() {
           <div className="survey-section">
             <h2>{getText('postSurveyTitle')}</h2>
             
+            {/* Comprehension Rating */}
+            <div className="survey-question">
+              <h3>{getText('comprehensionQuestion')}</h3>
+              <div className="radio-group">
+                {Object.entries(getText('comprehensionOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`comprehension-${value}`}
+                      name="comprehensionRating"
+                      value={value}
+                      checked={comprehensionRating === value}
+                      onChange={(e) => setComprehensionRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`comprehension-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Closeness Rating */}
+            <div className="survey-question">
+              <h3>{getText('closenessQuestion')}</h3>
+              <div className="radio-group">
+                {Object.entries(getText('closenessOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`closeness-${value}`}
+                      name="closenessRating"
+                      value={value}
+                      checked={closenessRating === value}
+                      onChange={(e) => setClosenessRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`closeness-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Enjoyment Rating */}
+            <div className="survey-question">
+              <h3>{getText('enjoymentQuestion')}</h3>
+              <div className="radio-group">
+                {Object.entries(getText('enjoymentOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`enjoyment-${value}`}
+                      name="enjoymentRating"
+                      value={value}
+                      checked={enjoymentRating === value}
+                      onChange={(e) => setEnjoymentRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`enjoyment-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Engagement Rating */}
             <div className="survey-question">
               <h3>{getText('engagementQuestion')}</h3>
@@ -374,21 +448,21 @@ function App() {
               </div>
             </div>
 
-            {/* Friendliness Rating */}
+            {/* Listening Rating */}
             <div className="survey-question">
-              <h3>{getText('friendlinessQuestion')}</h3>
+              <h3>{getText('listeningQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('friendlinessOptions')).map(([value, label]) => (
+                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
-                      id={`friendliness-${value}`}
-                      name="friendlinessRating"
+                      id={`listening-${value}`}
+                      name="listeningRating"
                       value={value}
-                      checked={friendlinessRating === value}
-                      onChange={(e) => setFriendlinessRating(e.target.value)}
+                      checked={listeningRating === value}
+                      onChange={(e) => setListeningRating(e.target.value)}
                     />
-                    <label className="radio-option-label" htmlFor={`friendliness-${value}`}>
+                    <label className="radio-option-label" htmlFor={`listening-${value}`}>
                       <span className="radio-value">{value}</span>
                       <span className="radio-description">{label}</span>
                     </label>
@@ -397,21 +471,21 @@ function App() {
               </div>
             </div>
 
-            {/* Overall Quality Rating */}
+            {/* Interest Rating */}
             <div className="survey-question">
-              <h3>{getText('overallQuestion')}</h3>
+              <h3>{getText('interestQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('overallOptions')).map(([value, label]) => (
+                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
-                      id={`quality-${value}`}
-                      name="overallRating"
+                      id={`interest-${value}`}
+                      name="interestRating"
                       value={value}
-                      checked={overallRating === value}
-                      onChange={(e) => setOverallRating(e.target.value)}
+                      checked={interestRating === value}
+                      onChange={(e) => setInterestRating(e.target.value)}
                     />
-                    <label className="radio-option-label" htmlFor={`quality-${value}`}>
+                    <label className="radio-option-label" htmlFor={`interest-${value}`}>
                       <span className="radio-value">{value}</span>
                       <span className="radio-description">{label}</span>
                     </label>
@@ -420,117 +494,118 @@ function App() {
               </div>
             </div>
 
-            {/* Continue Conversation */}
+            {/* Common Ground Rating */}
             <div className="survey-question">
-              <h3>{getText('continueQuestion')}</h3>
-              <div className="binary-radio-group">
-                <div className="binary-radio-option">
-                  <input
-                    type="radio"
-                    id="continue-yes"
-                    name="continueChat"
-                    value="yes"
-                    checked={continueChat === "yes"}
-                    onChange={(e) => setContinueChat(e.target.value)}
-                  />
-                  <label className="binary-radio-label" htmlFor="continue-yes">{getText('yesOption')}</label>
-                </div>
-                <div className="binary-radio-option">
-                  <input
-                    type="radio"
-                    id="continue-no"
-                    name="continueChat"
-                    value="no"
-                    checked={continueChat === "no"}
-                    onChange={(e) => setContinueChat(e.target.value)}
-                  />
-                  <label className="binary-radio-label" htmlFor="continue-no">{getText('noOption')}</label>
-                </div>
+              <h3>{getText('commongroundQuestion')}</h3>
+              <div className="radio-group">
+                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`commonground-${value}`}
+                      name="commongroundRating"
+                      value={value}
+                      checked={commongroundRating === value}
+                      onChange={(e) => setCommongroundRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`commonground-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Chat Partner Type */}
+            {/* Responsiveness Rating */}
             <div className="survey-question">
-              <h3>{getText('chatPartnerQuestion')}</h3>
-              <div className="binary-radio-group">
-                <div className="binary-radio-option">
-                  <input
-                    type="radio"
-                    id="partner-real"
-                    name="chatPartnerType"
-                    value="real"
-                    checked={chatPartnerType === "real"}
-                    onChange={(e) => setChatPartnerType(e.target.value)}
-                  />
-                  <label className="binary-radio-label" htmlFor="partner-real">{getText('realPersonOption')}</label>
-                </div>
-                <div className="binary-radio-option">
-                  <input
-                    type="radio"
-                    id="partner-ai"
-                    name="chatPartnerType"
-                    value="ai"
-                    checked={chatPartnerType === "ai"}
-                    onChange={(e) => setChatPartnerType(e.target.value)}
-                  />
-                  <label className="binary-radio-label" htmlFor="partner-ai">{getText('aiBotOption')}</label>
-                </div>
+              <h3>{getText('responsivenessQuestion')}</h3>
+              <div className="radio-group">
+                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`responsiveness-${value}`}
+                      name="responsivenessRating"
+                      value={value}
+                      checked={responsivenessRating === value}
+                      onChange={(e) => setResponsivenessRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`responsiveness-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Future Interaction Rating */}
+            <div className="survey-question">
+              <h3>{getText('futureInteractionQuestion')}</h3>
+              <div className="radio-group">
+                {Object.entries(getText('futureInteractionOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`futureInteraction-${value}`}
+                      name="futureInteractionRating"
+                      value={value}
+                      checked={futureInteractionRating === value}
+                      onChange={(e) => setFutureInteractionRating(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`futureInteraction-${value}`}>
+                      <span className="radio-value">{value}</span>
+                      <span className="radio-description">{label}</span>
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Reasoning */}
             <div className="survey-question">
-              <h3>{formatText('reasoningQuestion', chatPartnerType === "real" ? getText('realPersonOption').toLowerCase() : getText('aiBotOption').toLowerCase())}</h3>
+              <h3>{getText('reasoningQuestion')}</h3>
               <textarea
-                value={chatReasoningText}
-                onChange={(e) => setChatReasoningText(e.target.value)}
+                value={reasoningText}
+                onChange={(e) => setReasoningText(e.target.value)}
                 placeholder={getText('reasoningPlaceholder')}
                 rows="4"
               />
             </div>
 
-            {/* Native Speaker Questions - Only show if chatPartnerType is "real" */}
-            {chatPartnerType === "real" && (
-              <>
-                <div className="survey-question">
-                  <h3>{getText('nativeSpeakerQuestion')}</h3>
-                  <div className="binary-radio-group">
-                    <div className="binary-radio-option">
-                      <input
-                        type="radio"
-                        id="native-yes"
-                        name="isNativeSpeaker"
-                        value="yes"
-                        checked={isNativeSpeaker === "yes"}
-                        onChange={(e) => setIsNativeSpeaker(e.target.value)}
-                      />
-                      <label className="binary-radio-label" htmlFor="native-yes">{getText('yesOption')}</label>
-                    </div>
-                    <div className="binary-radio-option">
-                      <input
-                        type="radio"
-                        id="native-no"
-                        name="isNativeSpeaker"
-                        value="no"
-                        checked={isNativeSpeaker === "no"}
-                        onChange={(e) => setIsNativeSpeaker(e.target.value)}
-                      />
-                      <label className="binary-radio-label" htmlFor="native-no">{getText('noOption')}</label>
-                    </div>
+            {/* Partner Identity */}
+            <div className="survey-question">
+              <h3>{getText('partnerIdentityQuestion')}</h3>
+              <div className="radio-group">
+                {Object.entries(getText('partnerIdentityOptions')).map(([value, label]) => (
+                  <div key={value} className="radio-option">
+                    <input
+                      type="radio"
+                      id={`partnerIdentity-${value}`}
+                      name="partnerIdentity"
+                      value={value}
+                      checked={partnerIdentity === value}
+                      onChange={(e) => setPartnerIdentity(e.target.value)}
+                    />
+                    <label className="radio-option-label" htmlFor={`partnerIdentity-${value}`}>
+                      <span className="radio-description">{label}</span>
+                    </label>
                   </div>
-                </div>
+                ))}
+              </div>
+            </div>
 
-                <div className="survey-question">
-                  <h3>{formatText('nativeSpeakerReasonQuestion', isNativeSpeaker === "yes" ? getText('nativeOption') : getText('nonNativeOption'))}</h3>
-                  <textarea
-                    value={nativeSpeakerReason}
-                    onChange={(e) => setNativeSpeakerReason(e.target.value)}
-                    placeholder={getText('reasoningPlaceholder')}
-                    rows="4"
-                  />
-                </div>
-              </>
-            )}
+            {/* Identity Reasoning */}
+            <div className="survey-question">
+              <h3>{getText('identityReasoningQuestion')}</h3>
+              <textarea
+                value={identityReasoningText}
+                onChange={(e) => setIdentityReasoningText(e.target.value)}
+                placeholder={getText('identityReasoningPlaceholder')}
+                rows="4"
+              />
+            </div>
 
             <button className="button-primary submit-survey-btn" onClick={submitSurvey}>
               {getText('submitSurveyButton')}

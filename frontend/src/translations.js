@@ -2,7 +2,7 @@ const translations = {
   english: {
     // Header
     title: "Welcome to Chat Room!",
-    researchStudyInfo: "You are invited to participate in a research study on interpersonal communication. You will be asked to chat anonymously with another user for 3 minutes and answer survey questions about your chat experience. You may be asked one of the following prompts (sourced from the Fast Friends Paradigm):\n\n1) What would constitute a \"perfect\" day for you?\n\n\n2) What do you value most in a friendship?\n\n\n3) How do you feel about your relationship with your mother?",
+    researchStudyInfo: "You are invited to participate in a research study on interpersonal communication. You will be asked to chat anonymously with another user for 3 minutes and answer survey questions about your chat experience. You may be asked one of the following prompts (sourced from the Fast Friends Paradigm):\n\n1) What would constitute a \"perfect\" day for you?\n\n2) What do you value most in a friendship?\n\n3) How do you feel about your relationship with your mother?",
     
     // System Messages
     thankYouMessage: "Thank you for your feedback! You will be redirected to the completion page.",
@@ -64,48 +64,85 @@ const translations = {
     
     // Post-Survey
     postSurveyTitle: "Post-Survey",
-    engagementQuestion: "1. How would you rate your conversation on engagement?",
+    comprehensionQuestion: "Q1. How easy was it to understand each message you received?",
+    comprehensionOptions: {
+      "1": "Very difficult",
+      "2": "Difficult",
+      "3": "Neutral",
+      "4": "Easy",
+      "5": "Very easy"
+    },
+    
+    closenessQuestion: "Q2. How close do you feel toward your chat partner?",
+    closenessOptions: {
+      "1": "Not at all",
+      "2": "A little",
+      "3": "Moderately",
+      "4": "Somewhat",
+      "5": "Quite a bit",
+      "6": "A lot",
+      "7": "A great deal"
+    },
+    
+    enjoymentQuestion: "Q3. How much did you enjoy the conversation?",
+    enjoymentOptions: {
+      "1": "Not at all",
+      "2": "A little",
+      "3": "Moderately",
+      "4": "Somewhat",
+      "5": "Quite a bit",
+      "6": "A lot",
+      "7": "A great deal"
+    },
+    
+    engagementQuestion: "Q4. How engaging was the conversation?",
     engagementOptions: {
-      "1": "Very unengaging",
-      "2": "Somewhat unengaging",
-      "3": "Neutral",
-      "4": "Engaging",
-      "5": "Very engaging"
+      "1": "Not at all",
+      "2": "A little",
+      "3": "Moderately",
+      "4": "Somewhat",
+      "5": "Quite a bit",
+      "6": "A lot",
+      "7": "A great deal"
     },
     
-    friendlinessQuestion: "2. How would you rate your conversation on friendliness?",
-    friendlinessOptions: {
-      "1": "Very unfriendly",
-      "2": "Somewhat unfriendly",
-      "3": "Neutral",
-      "4": "Friendly",
-      "5": "Very friendly"
+    listeningQuestion: "Q5. The other seemed to really listen to me.",
+    interestQuestion: "Q6. The other seemed interested in what I am thinking and feeling.",
+    commongroundQuestion: "Q7. The other was \"on the same wavelength\" with me.",
+    responsivenessQuestion: "Q8. The other was responsive to my questions/answers.",
+    perceptionOptions: {
+      "1": "Not at all true",
+      "2": "Slightly true",
+      "3": "Somewhat true",
+      "4": "Moderately true",
+      "5": "Quite true",
+      "6": "Very true",
+      "7": "Extremely true"
     },
     
-    overallQuestion: "3. How would you rate the conversation quality overall?",
-    overallOptions: {
-      "1": "Very bad",
-      "2": "Bad",
-      "3": "Neutral",
-      "4": "Good",
-      "5": "Very good"
+    futureInteractionQuestion: "Q9. How much are you willing to converse with your chat partner in the future?",
+    futureInteractionOptions: {
+      "1": "Not at all",
+      "2": "A little",
+      "3": "Moderately",
+      "4": "Somewhat",
+      "5": "Quite a bit",
+      "6": "A lot",
+      "7": "A great deal"
     },
     
-    continueQuestion: "4. Do you want to continue conversing with this individual?",
-    yesOption: "Yes",
-    noOption: "No",
-    
-    chatPartnerQuestion: "5. Do you think you were chatting with a real person or AI bot?",
-    realPersonOption: "Real person",
-    aiBotOption: "AI bot",
-    
-    reasoningQuestion: "6. Why did you believe your chat was a {0}?",
+    reasoningQuestion: "Q10. Please explain your reasoning:",
     reasoningPlaceholder: "Please explain your reasoning...",
     
-    nativeSpeakerQuestion: "7. Do you think you were chatting with a native speaker of the same language?",
-    nativeSpeakerReasonQuestion: "8. Why did you believe your chat was a {0} speaker?",
-    nativeOption: "native",
-    nonNativeOption: "non-native",
+    partnerIdentityQuestion: "Q11. Who do you think you were chatting with?",
+    partnerIdentityOptions: {
+      "ai": "AI",
+      "native": "Native speaker of your language",
+      "nonNative": "Non-native speaker of your language"
+    },
+    
+    identityReasoningQuestion: "Q12. Please explain your reasoning:",
+    identityReasoningPlaceholder: "Please explain your reasoning...",
     
     // Messages
     surveySubmittedMessage: "Thank you for your feedback! You were in fact chatting with a real person. You will be redirected to the completion page.",
@@ -182,48 +219,85 @@ const translations = {
     
     // Post-Survey
     postSurveyTitle: "Encuesta Posterior",
-    engagementQuestion: "1. ¿Cómo calificaría su conversación en términos de participación?",
+    comprehensionQuestion: "P1. ¿Qué tan fácil fue entender cada mensaje que recibiste?",
+    comprehensionOptions: {
+      "1": "Muy difícil",
+      "2": "Difícil",
+      "3": "Neutral",
+      "4": "Fácil",
+      "5": "Muy fácil"
+    },
+    
+    closenessQuestion: "P2. ¿Qué tan cercano te sientes con tu compañero de chat?",
+    closenessOptions: {
+      "1": "Nada",
+      "2": "Un poco",
+      "3": "Moderadamente",
+      "4": "Algo",
+      "5": "Bastante",
+      "6": "Mucho",
+      "7": "Muchísimo"
+    },
+    
+    enjoymentQuestion: "P3. ¿Cuánto disfrutaste la conversación?",
+    enjoymentOptions: {
+      "1": "Nada",
+      "2": "Un poco",
+      "3": "Moderadamente",
+      "4": "Algo",
+      "5": "Bastante",
+      "6": "Mucho",
+      "7": "Muchísimo"
+    },
+    
+    engagementQuestion: "P4. ¿Qué tan atractiva fue la conversación?",
     engagementOptions: {
-      "1": "Muy poco atractiva",
-      "2": "Algo poco atractiva",
-      "3": "Neutral",
-      "4": "Atractiva",
-      "5": "Muy atractiva"
+      "1": "Nada",
+      "2": "Un poco",
+      "3": "Moderadamente",
+      "4": "Algo",
+      "5": "Bastante",
+      "6": "Mucho",
+      "7": "Muchísimo"
     },
     
-    friendlinessQuestion: "2. ¿Cómo calificaría su conversación en términos de amabilidad?",
-    friendlinessOptions: {
-      "1": "Muy poco amigable",
-      "2": "Algo poco amigable",
-      "3": "Neutral",
-      "4": "Amigable",
-      "5": "Muy amigable"
+    listeningQuestion: "P5. El otro parecía realmente escucharme.",
+    interestQuestion: "P6. El otro parecía interesado en lo que pienso y siento.",
+    commongroundQuestion: "P7. El otro estaba \"en la misma sintonía\" que yo.",
+    responsivenessQuestion: "P8. El otro respondió a mis preguntas/respuestas.",
+    perceptionOptions: {
+      "1": "Nada cierto",
+      "2": "Ligeramente cierto",
+      "3": "Algo cierto",
+      "4": "Moderadamente cierto",
+      "5": "Bastante cierto",
+      "6": "Muy cierto",
+      "7": "Extremadamente cierto"
     },
     
-    overallQuestion: "3. ¿Cómo calificaría la calidad general de la conversación?",
-    overallOptions: {
-      "1": "Muy mala",
-      "2": "Mala",
-      "3": "Neutral",
-      "4": "Buena",
-      "5": "Muy buena"
+    futureInteractionQuestion: "P9. ¿Cuánto estás dispuesto a conversar con tu compañero de chat en el futuro?",
+    futureInteractionOptions: {
+      "1": "Nada",
+      "2": "Un poco",
+      "3": "Moderadamente",
+      "4": "Algo",
+      "5": "Bastante",
+      "6": "Mucho",
+      "7": "Muchísimo"
     },
     
-    continueQuestion: "4. ¿Desea continuar conversando con esta persona?",
-    yesOption: "Sí",
-    noOption: "No",
-    
-    chatPartnerQuestion: "5. ¿Cree que estaba chateando con una persona real o un bot de IA?",
-    realPersonOption: "Persona real",
-    aiBotOption: "Bot de IA",
-    
-    reasoningQuestion: "6. ¿Por qué creíste que tu chat era {0}?",
+    reasoningQuestion: "P10. Por favor explica tu razonamiento:",
     reasoningPlaceholder: "Por favor explica tu razonamiento...",
     
-    nativeSpeakerQuestion: "7. ¿Crees que estabas chateando con un hablante nativo del mismo idioma?",
-    nativeSpeakerReasonQuestion: "8. ¿Por qué creíste que tu chat era un hablante {0}?",
-    nativeOption: "nativo",
-    nonNativeOption: "no nativo",
+    partnerIdentityQuestion: "P11. ¿Con quién crees que estabas chateando?",
+    partnerIdentityOptions: {
+      "ai": "IA",
+      "native": "Hablante nativo de tu idioma",
+      "nonNative": "Hablante no nativo de tu idioma"
+    },
+    
+    identityReasoningQuestion: "P12. Por favor explica tu razonamiento:",
+    identityReasoningPlaceholder: "Por favor explica tu razonamiento...",
     
     // Messages
     surveySubmittedMessage: "¡Gracias por tus comentarios! Serás redirigido a la página de completación.",
