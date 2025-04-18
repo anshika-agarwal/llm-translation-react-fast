@@ -2,7 +2,7 @@ const translations = {
   english: {
     // Header
     title: "Welcome to Chat Room!",
-    researchStudyInfo: "You are invited to participate in a research study on interpersonal communication. You will be asked to chat anonymously with another user for 3 minutes and answer survey questions about your chat experience. You may be asked one of the following prompts (sourced from the Fast Friends Paradigm):\n\n1) What would constitute a \"perfect\" day for you?\n\n2) What do you value most in a friendship?\n\n3) How do you feel about your relationship with your mother?",
+    researchStudyInfo: "You are invited to participate in a research study on interpersonal communication. You will be asked to chat anonymously with another user for 3 minutes and answer survey questions about your chat experience. You will be asked to chat about the following prompt: If you could change anything about the way you were raised, what would it be?",
     
     // System Messages
     thankYouMessage: "Thank you for your feedback! You will be redirected to the completion page.",
@@ -106,10 +106,10 @@ const translations = {
       "7": "A great deal"
     },
     
-    listeningQuestion: "Q5. The other seemed to really listen to me.",
-    interestQuestion: "Q6. The other seemed interested in what I am thinking and feeling.",
-    commongroundQuestion: "Q7. The other was \"on the same wavelength\" with me.",
-    responsivenessQuestion: "Q8. The other was responsive to my questions/answers.",
+    listeningQuestion: "Q5. How much do you agree with the following statement: The other seemed to really listen to me.",
+    interestQuestion: "Q6. How much do you agree with the following statement: The other seemed interested in what I am thinking and feeling.",
+    commongroundQuestion: "Q7. How much do you agree with the following statement: The other was \"on the same wavelength\" with me.",
+    responsivenessQuestion: "Q8. How much do you agree with the following statement: The other was responsive to my questions/answers.",
     perceptionOptions: {
       "1": "Not at all true",
       "2": "Slightly true",
@@ -261,10 +261,10 @@ const translations = {
       "7": "Muchísimo"
     },
     
-    listeningQuestion: "P5. El otro parecía realmente escucharme.",
-    interestQuestion: "P6. El otro parecía interesado en lo que pienso y siento.",
-    commongroundQuestion: "P7. El otro estaba \"en la misma sintonía\" que yo.",
-    responsivenessQuestion: "P8. El otro respondió a mis preguntas/respuestas.",
+    listeningQuestion: "P5. Qué tan de acuerdo estás con la siguiente afirmación: El otro parecía realmente escucharme.",
+    interestQuestion: "P6. Qué tan de acuerdo estás con la siguiente afirmación: El otro parecía interesado en lo que pienso y siento.",
+    commongroundQuestion: "P7. Qué tan de acuerdo estás con la siguiente afirmación: El otro estaba \"en la misma sintonía\" que yo.",
+    responsivenessQuestion: "P8. Qué tan de acuerdo estás con la siguiente afirmación: El otro respondió a mis preguntas/respuestas.",
     perceptionOptions: {
       "1": "Nada cierto",
       "2": "Ligeramente cierto",

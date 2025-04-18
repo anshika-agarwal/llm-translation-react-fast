@@ -297,11 +297,15 @@ function App() {
         </header>
 
         <div className="welcome-container">
-          <p className="research-info">{translations[language].researchStudyInfo}</p>
-          {!isPaired && (
-            <button className="button-primary find-partner-btn" onClick={findPair}>
-              {getText('findPartnerButton')}
-            </button>
+          {!showSurvey && (
+            <>
+              <p className="research-info">{translations[language].researchStudyInfo}</p>
+              {!isPaired && (
+                <button className="button-primary find-partner-btn" onClick={findPair}>
+                  {getText('findPartnerButton')}
+                </button>
+              )}
+            </>
           )}
         </div>
 
