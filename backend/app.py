@@ -64,9 +64,9 @@ import sys
 from pathlib import Path
 
 def get_conversation_starter():
-    """Get a random index for the conversation starter."""
-    # We know there are 3 starters in each language
-    return random.randint(0, 2)
+    """Get the conversation starter index."""
+    # We only have one conversation starter now
+    return 0
 
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
