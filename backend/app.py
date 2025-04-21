@@ -50,8 +50,12 @@ PROLIFIC_API_URL = "https://api.prolific.com/api/v1"
 #PRIORITY_WAIT_TIME = 300  # seconds for priority matching (different languages only)
 MAX_WAIT_TIME = 10     # seconds before timeout
 PRIORITY_PAIRS = [
+    ("english", "chinese"),
+    ("chinese", "english"),
     ("english", "spanish"),
-    ("spanish", "english")
+    ("spanish", "english"),
+    ("chinese", "spanish"),
+    ("spanish", "chinese")
 ]
 CONTROL_PAIRS = [
     ("english", "english"),
@@ -241,7 +245,7 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
     
     # Only try to find priority matches (different languages)
     for waiting_ws, waiting_lang, join_time in waiting_room:
-        if waiting_ws != websocket and (language, waiting_lang) in PRIORITY_PAIRS:
+        if waiting_ws != websocket and (language, waiting_lang) in CONTROL_PAIRS:
             # Remove the matched pair from waiting room immediately
             waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
                              if w not in (websocket, waiting_ws)]
@@ -276,7 +280,7 @@ async def pair_users():
     # Try to pair remaining participants
     for i, (ws1, lang1, _) in enumerate(waiting_room):
         for j, (ws2, lang2, _) in enumerate(waiting_room[i+1:], i+1):
-            if (lang1, lang2) in PRIORITY_PAIRS:
+            if (lang1, lang2) in CONTROL_PAIRS:
                 # Set up the pair
                 active_users[ws1] = ws2
                 active_users[ws2] = ws1
