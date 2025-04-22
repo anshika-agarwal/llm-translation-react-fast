@@ -362,7 +362,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('comprehensionQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('comprehensionOptions')).map(([value, label]) => (
+                {Object.entries(translations[language][getText('comprehensionOptions')]).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -385,7 +385,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('closenessQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('closenessOptions')).map(([value, label]) => (
+                {Object.entries(translations[language][getText('closenessOptions')]).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -408,7 +408,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('enjoymentQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('enjoymentOptions')).map(([value, label]) => (
+                {Object.entries(translations[language][getText('enjoymentOptions')]).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -431,7 +431,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('engagementQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('engagementOptions')).map(([value, label]) => (
+                {Object.entries(translations[language][getText('engagementOptions')]).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -454,7 +454,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('listeningQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                {Object.entries(translations[language].threePointScale).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -477,7 +477,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('interestQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                {Object.entries(translations[language].threePointScale).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -500,7 +500,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('commongroundQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                {Object.entries(translations[language].threePointScale).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -523,7 +523,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('responsivenessQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                {Object.entries(translations[language].threePointScale).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -546,7 +546,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('futureInteractionQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('futureInteractionOptions')).map(([value, label]) => (
+                {Object.entries(translations[language].threePointScale).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
@@ -580,7 +580,7 @@ function App() {
             <div className="survey-question">
               <h3>{getText('partnerIdentityQuestion')}</h3>
               <div className="radio-group">
-                {Object.entries(getText('partnerIdentityOptions')).map(([value, label]) => (
+                {Object.entries(translations[language][getText('partnerIdentityOptions')]).map(([value, label]) => (
                   <div key={value} className="radio-option">
                     <input
                       type="radio"
