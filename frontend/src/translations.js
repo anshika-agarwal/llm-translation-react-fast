@@ -52,25 +52,73 @@ const translations = {
     
     // Questions
     comprehensionQuestion: "Q1. How easy was it to understand the messages you received?",
-    comprehensionOptions: "threePointEasyScale",
+    comprehensionOptions: {
+      "1": "Not at all easy",
+      "2": "",
+      "3": "",
+      "4": "Somewhat easy",
+      "5": "",
+      "6": "",
+      "7": "Extremely easy"
+    },
     
     closenessQuestion: "Q2. How close do you feel toward your chat partner?",
-    closenessOptions: "threePointScale",
+    closenessOptions: {
+      "1": "Not at all",
+      "2": "",
+      "3": "",
+      "4": "Somewhat",
+      "5": "",
+      "6": "",
+      "7": "A great deal"
+    },
     
     enjoymentQuestion: "Q3. How much did you enjoy the conversation?",
-    enjoymentOptions: "threePointScale",
+    enjoymentOptions: {
+      "1": "Not at all",
+      "2": "",
+      "3": "",
+      "4": "Somewhat",
+      "5": "",
+      "6": "",
+      "7": "A great deal"
+    },
     
     engagementQuestion: "Q4. How engaging was the conversation?",
-    engagementOptions: "threePointScale",
+    engagementOptions:{
+      "1": "Not at all",
+      "2": "",
+      "3": "",
+      "4": "Somewhat",
+      "5": "",
+      "6": "",
+      "7": "A great deal"
+    },
     
     listeningQuestion: "Q5. How much do you agree with the following statement: The other person seemed to really listen to me.",
     interestQuestion: "Q6. How much do you agree with the following statement: The other person seemed interested in what I was thinking and feeling.",
     commongroundQuestion: 'Q7. How much do you agree with the following statement: The other person was "on the same wavelength" with me.',
     responsivenessQuestion: "Q8. How much do you agree with the following statement: The other person was responsive to my questions and answers.",
-    perceptionOptions: "threePointScale",
+    perceptionOptions: {
+      "1": "Not at all",
+      "2": "",
+      "3": "",
+      "4": "Somewhat",
+      "5": "",
+      "6": "",
+      "7": "A great deal"
+    },
     
     futureInteractionQuestion: "Q9. How willing would you be to converse with your chat partner again in the future?",
-    futureInteractionOptions: "threePointScale",
+    futureInteractionOptions: {
+      "1": "Not at all",
+      "2": "",
+      "3": "",
+      "4": "Somewhat",
+      "5": "",
+      "6": "",
+      "7": "A great deal"
+    },
 
     reasoningQuestion: "Q10. Please explain your reasoning:",
     reasoningPlaceholder: "Please explain your reasoning...",
