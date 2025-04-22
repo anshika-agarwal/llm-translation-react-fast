@@ -40,21 +40,21 @@ const translations = {
     /* ───────── Post‑survey ───────── */
     threePointScale: {
       "1": "Not at all",
-      "2":"",
-      "3":"",
+      "2": "",
+      "3": "",
       "4": "Somewhat",
-      "5":"",
-      "6":"",
+      "5": "",
+      "6": "",
       "7": "A great deal"
     },
     
     threePointEasyScale: {
       "1": "Not at all easy",
-      "2":"",
-      "3":"",
+      "2": "",
+      "3": "",
       "4": "Moderately easy",
-      "5":"",
-      "6":"",
+      "5": "",
+      "6": "",
       "7": "Extremely easy"
     },
     
@@ -182,27 +182,32 @@ const translations = {
 
     /* Post‑survey */
     postSurveyTitle: "Encuesta Posterior",
-    comprehensionQuestion:
-      "P1. ¿Qué tan fácil fue entender cada mensaje que recibiste?",
-    comprehensionOptions: {
-      "1": "Muy difícil",
-      "2": "Difícil",
-      "3": "Neutral",
-      "4": "Fácil",
-      "5": "Muy fácil"
-    },
-
-    closenessQuestion: "P2. ¿Qué tan cercano te sientes a tu compañero?",
-    closenessOptions: {
-      "1": "Nada",
-      "2": "Un poco",
-      "3": "Moderadamente",
+    threePointScale: {
+      "1": "En absoluto",
+      "2": "",
+      "3": "",
       "4": "Algo",
-      "5": "Bastante",
-      "6": "Mucho",
+      "5": "",
+      "6": "",
       "7": "Muchísimo"
     },
-
+    
+    threePointEasyScale: {
+      "1": "Nada fácil",
+      "2": "",
+      "3": "",
+      "4": "Moderadamente fácil",
+      "5": "",
+      "6": "",
+      "7": "Extremadamente fácil"
+    },
+    
+    comprehensionQuestion: "P1. ¿Qué tan fácil fue entender los mensajes que recibiste?",
+    comprehensionOptions: "threePointEasyScale",
+    
+    closenessQuestion: "P2. ¿Qué tan cercano te sientes a tu compañero de chat?",
+    closenessOptions: "threePointScale",
+    
     enjoymentQuestion: "P3. ¿Cuánto disfrutaste la conversación?",
     enjoymentOptions: {
       "1": "Nada",
@@ -324,7 +329,7 @@ const translations = {
     },
 
     translationeseQuestion:
-      '您认为 LLM 在避免“翻译腔”（不自然或机器味译文）方面有多有效？',
+      '您认为 LLM 在避免"翻译腔"（不自然或机器味译文）方面有多有效？',
     translationeseOptions: {
       "1": "非常低效",
       "2": "有点低效",
@@ -351,26 +356,32 @@ const translations = {
     waitTimeLabel: "等待时间：",
 
     /* Post‑survey */
-    postSurveyTitle: "后测问卷",
-    comprehensionQuestion: "Q1. 您理解收到的消息有多容易？",
-    comprehensionOptions: {
-      "1": "非常困难",
-      "2": "困难",
-      "3": "一般",
-      "4": "容易",
-      "5": "非常容易"
+    postSurveyTitle: "调查问卷",
+    threePointScale: {
+      "1": "完全不",
+      "2": "",
+      "3": "",
+      "4": "有些",
+      "5": "",
+      "6": "",
+      "7": "非常"
     },
-
-    closenessQuestion: "Q2. 您觉得与聊天伙伴的亲近程度如何？",
-    closenessOptions: {
-      "1": "毫无",
-      "2": "少许",
-      "3": "中等",
-      "4": "较多",
-      "5": "相当多",
-      "6": "很多",
-      "7": "非常多"
+    
+    threePointEasyScale: {
+      "1": "完全不容易",
+      "2": "",
+      "3": "",
+      "4": "比较容易",
+      "5": "",
+      "6": "",
+      "7": "非常容易"
     },
+    
+    comprehensionQuestion: "Q1. 您觉得理解收到的消息有多容易？",
+    comprehensionOptions: "threePointEasyScale",
+    
+    closenessQuestion: "Q2. 您觉得与聊天伙伴有多亲近？",
+    closenessOptions: "threePointScale",
 
     enjoymentQuestion: "Q3. 您对本次对话的享受程度如何？",
     enjoymentOptions: {
@@ -399,7 +410,7 @@ const translations = {
     interestQuestion:
       "Q6. 对方似乎对我的想法和感受感兴趣。",
     commongroundQuestion:
-      'Q7. 对方与我“志同道合”。',
+      'Q7. 对方与我"志同道合"。',
     responsivenessQuestion:
       "Q8. 对方对我的问题/回答有回应。",
     perceptionOptions: {
