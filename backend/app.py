@@ -86,7 +86,7 @@ from pathlib import Path
 
 def get_conversation_starter():
     """Get the conversation starter index."""
-    # We only have one conversation starter now
+    # Always return the first conversation starter
     return 0
 
 def get_db_connection():
