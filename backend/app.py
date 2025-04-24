@@ -54,12 +54,29 @@ PRIORITY_PAIRS = [
     ("chinese", "english"),
     ("english", "spanish"),
     ("spanish", "english"),
+    ("english", "dutch"),
+    ("dutch", "english"),
+    ("english", "korean"),
+    ("korean", "english"),
     ("chinese", "spanish"),
-    ("spanish", "chinese")
+    ("spanish", "chinese"),
+    ("chinese", "dutch"),
+    ("dutch", "chinese"),
+    ("chinese", "korean"),
+    ("korean", "chinese"),
+    ("spanish", "dutch"),
+    ("dutch", "spanish"),
+    ("spanish", "korean"),
+    ("korean", "spanish"),
+    ("dutch", "korean"),
+    ("korean", "dutch")
 ]
 CONTROL_PAIRS = [
     ("english", "english"),
-    ("spanish", "spanish")
+    ("spanish", "spanish"),
+    ("chinese", "chinese"),
+    ("dutch", "dutch"),
+    ("korean", "korean")
 ]
 
 # Import translations from frontend
@@ -151,7 +168,9 @@ async def translate_message(message: str, source_language: str, target_language:
     language_map = {
         "english": "English",
         "chinese": "Chinese",
-        "spanish": "Spanish"
+        "spanish": "Spanish",
+        "dutch": "Dutch",
+        "korean": "Korean"
     }
     source = language_map.get(source_language.lower(), "English")
     target = language_map.get(target_language.lower(), "English")
