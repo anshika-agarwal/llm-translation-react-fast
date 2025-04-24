@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from './LanguageContext';
+import TimeoutPage from './TimeoutPage';
 
 function App() {
   const { getText, formatText, displayLanguage, language, translations, prolificPid, studyId, sessionId } = useLanguage();
@@ -46,6 +47,9 @@ function App() {
   const [isWaiting, setIsWaiting] = useState(false);
   const [waitStartTime, setWaitStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Add new state for showing timeout
+  const [showTimeout, setShowTimeout] = useState(false);
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -173,8 +177,7 @@ function App() {
             socketRef.current.close();
             socketRef.current = null;
           }
-          alert(getText('timeoutMessage'));
-          window.location.href = "https://app.prolific.com/submissions/complete?cc=CSNW5H07";
+          setShowTimeout(true);
         } else if (data.type === "info") {
           // Handle partner disconnection notification
           console.log("Partner status update:", data.message);
@@ -288,349 +291,353 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="app-content">
-        <header className="app-header">
-          <h1>{getText('title')}</h1>
-          {conversationId && (
-            <div className="conversation-id">ID: {conversationId}</div>
-          )}
-        </header>
-
-        {/* Chat Section */}
-        {showChat && (
-          <div className="chat-section">
-            <div className="chat-header">
-              <h2>{getText('chatRoomTitle')}</h2>
-              <div className="timer">{timer}</div>
-            </div>
-
-            <div className="messages-container">
-              {conversationStarter && (
-                <div className="conversation-starter">
-                  <p className="starter-question">{conversationStarter}</p>
-                </div>
-              )}
-              {messages.map((msg, index) => (
-                <div 
-                  key={index} 
-                  className={`message ${msg.sender === 'user' ? 'user' : 'partner'}`}
-                >
-                  {msg.text}
-                </div>
-              ))}
-              {isPartnerTyping && (
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <div className="chat-input">
-              <input
-                type="text"
-                placeholder={getText('messagePlaceholder')}
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                onInput={sendTypingStatus}
-              />
-              <button onClick={sendMessage}>{getText('sendButton')}</button>
-            </div>
-          </div>
-        )}
-
-        {/* Welcome Container - Only show when not in chat or survey */}
-        {!showChat && !showSurvey && (
-          <div className="welcome-container">
-            <p className="research-info">{translations[language].researchStudyInfo}</p>
-            {!isPaired && (
-              <button className="button-primary find-partner-btn" onClick={findPair}>
-                {getText('findPartnerButton')}
-              </button>
+      {showTimeout ? (
+        <TimeoutPage />
+      ) : (
+        <div className="app-content">
+          <header className="app-header">
+            <h1>{getText('title')}</h1>
+            {conversationId && (
+              <div className="conversation-id">ID: {conversationId}</div>
             )}
-          </div>
-        )}
+          </header>
 
-        {/* Survey Section */}
-        {showSurvey && (
-          <div className="survey-section">
-            <h2>{getText('postSurveyTitle')}</h2>
-            
-            {/* Comprehension Rating */}
-            <div className="survey-question">
-              <h3>{getText('comprehensionQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('comprehensionOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`comprehension-${value}`}
-                      name="comprehensionRating"
-                      value={value}
-                      checked={comprehensionRating === value}
-                      onChange={(e) => setComprehensionRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`comprehension-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
+          {/* Chat Section */}
+          {showChat && (
+            <div className="chat-section">
+              <div className="chat-header">
+                <h2>{getText('chatRoomTitle')}</h2>
+                <div className="timer">{timer}</div>
+              </div>
+
+              <div className="messages-container">
+                {conversationStarter && (
+                  <div className="conversation-starter">
+                    <p className="starter-question">{conversationStarter}</p>
+                  </div>
+                )}
+                {messages.map((msg, index) => (
+                  <div 
+                    key={index} 
+                    className={`message ${msg.sender === 'user' ? 'user' : 'partner'}`}
+                  >
+                    {msg.text}
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Closeness Rating */}
-            <div className="survey-question">
-              <h3>{getText('closenessQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('closenessOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`closeness-${value}`}
-                      name="closenessRating"
-                      value={value}
-                      checked={closenessRating === value}
-                      onChange={(e) => setClosenessRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`closeness-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
+                {isPartnerTyping && (
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                   </div>
-                ))}
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="chat-input">
+                <input
+                  type="text"
+                  placeholder={getText('messagePlaceholder')}
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  onInput={sendTypingStatus}
+                />
+                <button onClick={sendMessage}>{getText('sendButton')}</button>
               </div>
             </div>
+          )}
 
-            {/* Enjoyment Rating */}
-            <div className="survey-question">
-              <h3>{getText('enjoymentQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('enjoymentOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`enjoyment-${value}`}
-                      name="enjoymentRating"
-                      value={value}
-                      checked={enjoymentRating === value}
-                      onChange={(e) => setEnjoymentRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`enjoyment-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
+          {/* Welcome Container - Only show when not in chat or survey */}
+          {!showChat && !showSurvey && (
+            <div className="welcome-container">
+              <p className="research-info">{translations[language].researchStudyInfo}</p>
+              {!isPaired && (
+                <button className="button-primary find-partner-btn" onClick={findPair}>
+                  {getText('findPartnerButton')}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Survey Section */}
+          {showSurvey && (
+            <div className="survey-section">
+              <h2>{getText('postSurveyTitle')}</h2>
+              
+              {/* Comprehension Rating */}
+              <div className="survey-question">
+                <h3>{getText('comprehensionQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('comprehensionOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`comprehension-${value}`}
+                        name="comprehensionRating"
+                        value={value}
+                        checked={comprehensionRating === value}
+                        onChange={(e) => setComprehensionRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`comprehension-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Closeness Rating */}
+              <div className="survey-question">
+                <h3>{getText('closenessQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('closenessOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`closeness-${value}`}
+                        name="closenessRating"
+                        value={value}
+                        checked={closenessRating === value}
+                        onChange={(e) => setClosenessRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`closeness-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Enjoyment Rating */}
+              <div className="survey-question">
+                <h3>{getText('enjoymentQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('enjoymentOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`enjoyment-${value}`}
+                        name="enjoymentRating"
+                        value={value}
+                        checked={enjoymentRating === value}
+                        onChange={(e) => setEnjoymentRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`enjoyment-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Engagement Rating */}
+              <div className="survey-question">
+                <h3>{getText('engagementQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('engagementOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`engagement-${value}`}
+                        name="engagementRating"
+                        value={value}
+                        checked={engagementRating === value}
+                        onChange={(e) => setEngagementRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`engagement-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Listening Rating */}
+              <div className="survey-question">
+                <h3>{getText('listeningQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`listening-${value}`}
+                        name="listeningRating"
+                        value={value}
+                        checked={listeningRating === value}
+                        onChange={(e) => setListeningRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`listening-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Interest Rating */}
+              <div className="survey-question">
+                <h3>{getText('interestQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`interest-${value}`}
+                        name="interestRating"
+                        value={value}
+                        checked={interestRating === value}
+                        onChange={(e) => setInterestRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`interest-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Common Ground Rating */}
+              <div className="survey-question">
+                <h3>{getText('commongroundQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`commonground-${value}`}
+                        name="commongroundRating"
+                        value={value}
+                        checked={commongroundRating === value}
+                        onChange={(e) => setCommongroundRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`commonground-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Responsiveness Rating */}
+              <div className="survey-question">
+                <h3>{getText('responsivenessQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`responsiveness-${value}`}
+                        name="responsivenessRating"
+                        value={value}
+                        checked={responsivenessRating === value}
+                        onChange={(e) => setResponsivenessRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`responsiveness-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Future Interaction Rating */}
+              <div className="survey-question">
+                <h3>{getText('futureInteractionQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('futureInteractionOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`futureInteraction-${value}`}
+                        name="futureInteractionRating"
+                        value={value}
+                        checked={futureInteractionRating === value}
+                        onChange={(e) => setFutureInteractionRating(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`futureInteraction-${value}`}>
+                        <span className="radio-value">{value}</span>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reasoning */}
+              <div className="survey-question">
+                <h3>{getText('reasoningQuestion')}</h3>
+                <textarea
+                  value={reasoningText}
+                  onChange={(e) => setReasoningText(e.target.value)}
+                  placeholder={getText('reasoningPlaceholder')}
+                  rows="4"
+                />
+              </div>
+
+              {/* Partner Identity */}
+              <div className="survey-question">
+                <h3>{getText('partnerIdentityQuestion')}</h3>
+                <div className="radio-group">
+                  {Object.entries(getText('partnerIdentityOptions')).map(([value, label]) => (
+                    <div key={value} className="radio-option">
+                      <input
+                        type="radio"
+                        id={`partnerIdentity-${value}`}
+                        name="partnerIdentity"
+                        value={value}
+                        checked={partnerIdentity === value}
+                        onChange={(e) => setPartnerIdentity(e.target.value)}
+                      />
+                      <label className="radio-option-label" htmlFor={`partnerIdentity-${value}`}>
+                        <span className="radio-description">{label}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Identity Reasoning */}
+              <div className="survey-question">
+                <h3>{getText('identityReasoningQuestion')}</h3>
+                <textarea
+                  value={identityReasoningText}
+                  onChange={(e) => setIdentityReasoningText(e.target.value)}
+                  placeholder={getText('identityReasoningPlaceholder')}
+                  rows="4"
+                />
+              </div>
+
+              <button className="button-primary submit-survey-btn" onClick={submitSurvey}>
+                {getText('submitSurveyButton')}
+              </button>
+            </div>
+          )}
+
+          {/* Chat Partner Popup */}
+          {showChatPartnerPopup && (
+            <div className="popup-overlay">
+              <div className="popup-content">
+                <div className="loading-spinner"></div>
+                <h2 className="popup-title">{getText('waitingTitle')}</h2>
+                <div className="popup-wait-time">
+                  {getText('waitTimeLabel')} {formatTime(elapsedTime)}
+                </div>
+                <p className="popup-description">
+                  {getText('waitingDescription')}
+                </p>
               </div>
             </div>
-
-            {/* Engagement Rating */}
-            <div className="survey-question">
-              <h3>{getText('engagementQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('engagementOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`engagement-${value}`}
-                      name="engagementRating"
-                      value={value}
-                      checked={engagementRating === value}
-                      onChange={(e) => setEngagementRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`engagement-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Listening Rating */}
-            <div className="survey-question">
-              <h3>{getText('listeningQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`listening-${value}`}
-                      name="listeningRating"
-                      value={value}
-                      checked={listeningRating === value}
-                      onChange={(e) => setListeningRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`listening-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Interest Rating */}
-            <div className="survey-question">
-              <h3>{getText('interestQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`interest-${value}`}
-                      name="interestRating"
-                      value={value}
-                      checked={interestRating === value}
-                      onChange={(e) => setInterestRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`interest-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Common Ground Rating */}
-            <div className="survey-question">
-              <h3>{getText('commongroundQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`commonground-${value}`}
-                      name="commongroundRating"
-                      value={value}
-                      checked={commongroundRating === value}
-                      onChange={(e) => setCommongroundRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`commonground-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Responsiveness Rating */}
-            <div className="survey-question">
-              <h3>{getText('responsivenessQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('perceptionOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`responsiveness-${value}`}
-                      name="responsivenessRating"
-                      value={value}
-                      checked={responsivenessRating === value}
-                      onChange={(e) => setResponsivenessRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`responsiveness-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Future Interaction Rating */}
-            <div className="survey-question">
-              <h3>{getText('futureInteractionQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('futureInteractionOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`futureInteraction-${value}`}
-                      name="futureInteractionRating"
-                      value={value}
-                      checked={futureInteractionRating === value}
-                      onChange={(e) => setFutureInteractionRating(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`futureInteraction-${value}`}>
-                      <span className="radio-value">{value}</span>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Reasoning */}
-            <div className="survey-question">
-              <h3>{getText('reasoningQuestion')}</h3>
-              <textarea
-                value={reasoningText}
-                onChange={(e) => setReasoningText(e.target.value)}
-                placeholder={getText('reasoningPlaceholder')}
-                rows="4"
-              />
-            </div>
-
-            {/* Partner Identity */}
-            <div className="survey-question">
-              <h3>{getText('partnerIdentityQuestion')}</h3>
-              <div className="radio-group">
-                {Object.entries(getText('partnerIdentityOptions')).map(([value, label]) => (
-                  <div key={value} className="radio-option">
-                    <input
-                      type="radio"
-                      id={`partnerIdentity-${value}`}
-                      name="partnerIdentity"
-                      value={value}
-                      checked={partnerIdentity === value}
-                      onChange={(e) => setPartnerIdentity(e.target.value)}
-                    />
-                    <label className="radio-option-label" htmlFor={`partnerIdentity-${value}`}>
-                      <span className="radio-description">{label}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Identity Reasoning */}
-            <div className="survey-question">
-              <h3>{getText('identityReasoningQuestion')}</h3>
-              <textarea
-                value={identityReasoningText}
-                onChange={(e) => setIdentityReasoningText(e.target.value)}
-                placeholder={getText('identityReasoningPlaceholder')}
-                rows="4"
-              />
-            </div>
-
-            <button className="button-primary submit-survey-btn" onClick={submitSurvey}>
-              {getText('submitSurveyButton')}
-            </button>
-          </div>
-        )}
-
-        {/* Chat Partner Popup */}
-        {showChatPartnerPopup && (
-          <div className="popup-overlay">
-            <div className="popup-content">
-              <div className="loading-spinner"></div>
-              <h2 className="popup-title">{getText('waitingTitle')}</h2>
-              <div className="popup-wait-time">
-                {getText('waitTimeLabel')} {formatTime(elapsedTime)}
-              </div>
-              <p className="popup-description">
-                {getText('waitingDescription')}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

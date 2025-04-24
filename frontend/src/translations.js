@@ -15,6 +15,7 @@ const translations = {
     fillAllFieldsMessage:
       "Please answer all the survey questions before submitting.",
     serverErrorMessage: "Connection error. Please try again.",
+    timeoutTitle: "Connection Timeout",
     timeoutMessage:
       "Sorry, we could not pair you at this time. Please return the study and try again later.",
     partnerDisconnectedMessage:
@@ -151,6 +152,7 @@ const translations = {
     fillAllFieldsMessage:
       "Por favor responde todas las preguntas de la encuesta antes de enviar.",
     serverErrorMessage: "Error de conexión. Por favor, inténtalo de nuevo.",
+    timeoutTitle: "Connection Timeout",
     timeoutMessage:
       "Lo sentimos, no pudimos encontrar un compañero en este momento. Serás redirigido y podrás intentarlo más tarde.",
     partnerDisconnectedMessage:
@@ -294,6 +296,7 @@ const translations = {
     connectionLostMessage: "与服务器的连接已断开，无法提交调查。",
     fillAllFieldsMessage: "提交前请回答所有调查问题。",
     serverErrorMessage: "连接错误，请重试。",
+    timeoutTitle: "Connection Timeout",
     timeoutMessage:
       "抱歉，目前无法为您匹配伙伴。系统将引导您退出，请稍后再试。",
     partnerDisconnectedMessage:
@@ -421,6 +424,7 @@ const translations = {
     connectionLostMessage: "De verbinding met de server is verbroken. Uw enquête kan niet worden verzonden.",
     fillAllFieldsMessage: "Beantwoord alle enquêtevragen voordat u verzendt.",
     serverErrorMessage: "Verbindingsfout. Probeer het opnieuw.",
+    timeoutTitle: "Connection Timeout",
     timeoutMessage: "Sorry, we konden u op dit moment niet koppelen. U wordt doorgestuurd om het later opnieuw te proberen.",
     partnerDisconnectedMessage: "Uw chatpartner is verbroken. Voltooi uw enquête voordat u sluit.",
     
@@ -556,6 +560,7 @@ const translations = {
     connectionLostMessage: "서버와의 연결이 끊어졌습니다. 설문을 제출할 수 없습니다.",
     fillAllFieldsMessage: "제출하기 전에 모든 설문 질문에 답변해 주세요.",
     serverErrorMessage: "연결 오류입니다. 다시 시도해 주세요.",
+    timeoutTitle: "Connection Timeout",
     timeoutMessage: "죄송합니다. 현재 파트너를 찾을 수 없습니다. 나중에 다시 시도하도록 안내됩니다.",
     partnerDisconnectedMessage: "채팅 파트너가 연결을 끊었습니다. 닫기 전에 설문을 완료해 주세요.",
     

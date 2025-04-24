@@ -539,16 +539,22 @@ textarea::placeholder {
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  background: var(--surface);
 }
 
 .radio-option input[type="radio"]:checked + .radio-option-label {
   background: rgba(14, 165, 233, 0.05);
   border: 2px solid var(--primary);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
 }
 
 .radio-option-label:hover {
   border-color: var(--primary);
   background: rgba(14, 165, 233, 0.02);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.05);
 }
 
 .radio-value {
@@ -602,10 +608,12 @@ textarea::placeholder {
 .binary-radio-option input[type="radio"]:checked + .binary-radio-label {
   background: rgba(14, 165, 233, 0.1);
   border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
 }
 
 .binary-radio-label:hover {
   border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.05);
 }
 
 /* Loading Popup */
@@ -811,11 +819,18 @@ textarea::placeholder {
 /* Update Radio Button Styles */
 .radio-option-label {
   min-height: 80px;
-  padding: 0.75rem 0.5rem;
+  padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  background: var(--surface);
 }
 
 .radio-value {
@@ -938,4 +953,54 @@ html {
 .research-info strong {
   color: #2c3e50;
   font-weight: 600;
+}
+
+/* Timeout Page Styles */
+.timeout-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  padding: 2rem;
+}
+
+.timeout-content {
+  max-width: 600px;
+  text-align: center;
+  background: var(--surface);
+  padding: 3rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+.timeout-content h2 {
+  font-size: 2rem;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.timeout-content p {
+  font-size: 1.125rem;
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .timeout-content {
+    padding: 2rem;
+  }
+  
+  .timeout-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .timeout-content p {
+    font-size: 1rem;
+  }
 }
