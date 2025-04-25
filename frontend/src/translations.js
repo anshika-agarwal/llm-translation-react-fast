@@ -530,23 +530,7 @@ const translations = {
     
     // Messages
     surveySubmittedMessage: "Bedankt voor uw feedback! U wordt doorgestuurd naar de voltooiingspagina.",
-    conversationStarters: {
-      english: [
-        "If you could change anything about the way you were raised, what would it be?"
-      ],
-      spanish: [
-        "Si pudieras cambiar algo sobre la forma en que te criaron, ¿qué sería?"
-      ],
-      chinese: [
-        "如果你可以改变你的成长方式，你会改变什么？"
-      ],
-      dutch: [
-        "Als je iets zou kunnen veranderen aan de manier waarop je bent opgevoed, wat zou dat dan zijn?"
-      ],
-      korean: [
-        "당신이 자라온 방식을 바꿀 수 있다면, 무엇을 바꾸고 싶으신가요?"
-      ]
-    }
+    conversationStarter: "Als je iets zou kunnen veranderen aan de manier waarop je bent opgevoed, wat zou dat dan zijn?",
   },
 
   korean: {
@@ -666,23 +650,7 @@ const translations = {
     
     // Messages
     surveySubmittedMessage: "피드백 감사합니다! 완료 페이지로 이동합니다.",
-    conversationStarters: {
-      english: [
-        "If you could change anything about the way you were raised, what would it be?"
-      ],
-      spanish: [
-        "Si pudieras cambiar algo sobre la forma en que te criaron, ¿qué sería?"
-      ],
-      chinese: [
-        "如果你可以改变你的成长方式，你会改变什么？"
-      ],
-      dutch: [
-        "Als u iets zou kunnen veranderen aan de manier waarop u bent opgevoed, wat zou dat zijn?"
-      ],
-      korean: [
-        "어렸을 때의 환경이나 자란 방식을 바꿀 수 있다면 무엇을 바꾸고 싶나요?"
-      ]
-    }
+    conversationStarter: "어렸을 때의 환경이나 자란 방식을 바꿀 수 있다면 무엇을 바꾸고 싶나요?",
   }
 };
 
