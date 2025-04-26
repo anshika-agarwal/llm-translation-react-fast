@@ -188,55 +188,45 @@ async def translate_message(message: str, source_language: str, target_language:
         print(f"[ERROR] OpenAI API call failed: {e}")
         return "Translation error."
 
-def run_update(sql, params):
-    """
-    Open a fresh DB connection, execute the given SQL with params, and close.
-    """
-    conn = get_db_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(sql, params)
-        conn.commit()
-    except Exception as e:
-        print(f"[ERROR] Database update failed: {e}")
-    finally:
-        conn.close()
-
 async def chat_timer_task(user1: WebSocket, user2: WebSocket, conversation_id):
-    """Send timer updates; on expiry, record length and notify users."""
+    """Send timer updates to both users; on expiry, send an 'expired' message."""
     try:
-        total_time = 180
+        total_time = 180  # Total chat duration in seconds
         print(f"[INFO] Timer started for conversation {conversation_id}.")
-        for remaining in range(total_time, 0, -1):
-            msg = json.dumps({"type": "timer", "remaining_time": remaining})
-            await user1.send_text(msg)
-            await user2.send_text(msg)
+        for remaining_time in range(total_time, 0, -1):
+            time_message = json.dumps({"type": "timer", "remaining_time": remaining_time})
+            await user1.send_text(time_message)
+            await user2.send_text(time_message)
             await asyncio.sleep(1)
-
-        print(f"[INFO] Chat timer expired for conversation {conversation_id}.")
-        end_time = datetime.now()
-        start_time = conversation_start_times.get(conversation_id, end_time)
-        delta = end_time - start_time
-        minutes = int(delta.total_seconds() // 60)
-        seconds = int(delta.total_seconds() % 60)
-        length_str = f"{minutes}:{seconds:02d}"
-
-        # Safely update length on a fresh connection
-        run_update(
-            "UPDATE conversations SET conversation_length = %s WHERE conversation_id = %s",
-            (length_str, conversation_id)
-        )
-
-        expired_msg = json.dumps({
+        # When timer expires, notify both users
+        expired_message = json.dumps({
             "type": "expired",
             "conversation_id": conversation_id,
             "message": "Chat timer has expired."
         })
-        await asyncio.gather(user1.send_text(expired_msg), user2.send_text(expired_msg))
-
+        print(f"[INFO] Chat timer expired for conversation {conversation_id}.")
+        
+        # Calculate conversation length for automatic expiry
+        end_time = datetime.now()
+        start_time = conversation_start_times.get(conversation_id, end_time)
+        duration = end_time - start_time
+        
+        # Update database with conversation length
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE conversations
+                    SET conversation_length = %s
+                    WHERE conversation_id = %s
+                """, (duration, conversation_id))
+                conn.commit()
+        finally:
+            conn.close()
+            
+        await asyncio.gather(user1.send_text(expired_message), user2.send_text(expired_message))
     except asyncio.CancelledError:
         print(f"[INFO] Chat timer cancelled for conversation {conversation_id}.")
-
 
 async def notify_prolific_overflow(participant_id: str):
     """Notify Prolific API about participant overflow."""
@@ -368,172 +358,222 @@ async def pair_users():
                         conn.close()
 
 async def start_chat(user1: WebSocket, user2: WebSocket, conversation_id):
+    """Central chat session that reads messages from both users."""
+    conn = None
     survey_submitted = {user1: False, user2: False}
     user_disconnected = {user1: False, user2: False}
-    conversation_start_times[conversation_id] = datetime.now()
-
+    chat_ended = False
     try:
+        conn = get_db_connection()
+        conversation_start_times[conversation_id] = datetime.now()
+
         while not all(survey_submitted.values()) and not all(user_disconnected.values()):
-            # Receive tasks
-            tasks = []
+            # Skip receiving if both users are gone
             if user1 in active_users:
-                tasks.append(asyncio.create_task(safe_receive(user1)))
+                user1_task = asyncio.create_task(safe_receive(user1))
             else:
+                user1_task = None
                 user_disconnected[user1] = True
+
             if user2 in active_users:
-                tasks.append(asyncio.create_task(safe_receive(user2)))
+                user2_task = asyncio.create_task(safe_receive(user2))
             else:
+                user2_task = None
                 user_disconnected[user2] = True
 
+            tasks = [t for t in [user1_task, user2_task] if t is not None]
             if not tasks:
+                break  # No one left to receive from
+
+            try:
+                done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+                for task in done:
+                    try:
+                        message_text = task.result()
+                        sender = user1 if task == user1_task else user2
+                        receiver = user2 if sender == user1 else user1
+
+                        if message_text is None:
+                            user_disconnected[sender] = True
+                            continue
+
+                        message = json.loads(message_text)
+                        if "type" not in message:
+                            print(f"[ERROR] Missing 'type' in message: {message}")
+                            continue
+
+                        if message["type"] == "endChat":
+                            chat_ended = True
+                            if conversation_id in chat_timers:
+                                chat_timers[conversation_id].cancel()
+                                del chat_timers[conversation_id]
+
+                            end_time = datetime.now()
+                            start_time = conversation_start_times.get(conversation_id, end_time)
+                            duration = (end_time - start_time).total_seconds()
+                            minutes = int(duration // 60)
+                            seconds = int(duration % 60)
+
+                            with conn.cursor() as cursor:
+                                cursor.execute("""
+                                    UPDATE conversations
+                                    SET conversation_length = %s
+                                    WHERE conversation_id = %s
+                                """, (f"{minutes}:{seconds:02d}", conversation_id))
+                                conn.commit()
+
+                            survey_prompt = json.dumps({
+                                "type": "survey",
+                                "conversation_id": conversation_id,
+                                "message": f"Conversation {conversation_id} has ended."
+                            })
+                            await asyncio.gather(
+                                *(user.send_text(survey_prompt) for user in [user1, user2]
+                                  if not user_disconnected[user])
+                            )
+                            print("[INFO] Sent survey prompts to both users.")
+
+                        elif message["type"] == "survey":
+                            await handle_survey_submission(conn, conversation_id, sender, message, survey_submitted)
+
+                        elif message["type"] in ["typing", "stopTyping"]:
+                            if not user_disconnected[receiver]:
+                                await receiver.send_text(json.dumps({
+                                    "type": "typing",
+                                    "status": "typing" if message["type"] == "typing" else "stopped"
+                                }))
+
+                        elif message["type"] == "message" and "text" in message:
+                            if not user_disconnected[receiver]:
+                                await handle_message(conn, conversation_id, sender, receiver, message)
+
+                        else:
+                            print(f"[WARNING] Unhandled message type: {message}")
+                    except Exception as e:
+                        print(f"[ERROR] Exception processing message: {e}")
+
+                for task in pending:
+                    task.cancel()
+
+            except asyncio.CancelledError:
+                print(f"[INFO] Chat session cancelled for conversation {conversation_id}")
                 break
 
-            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-
-            for task in done:
-                message_text = task.result()
-                sender = user1 if task in [t for t in tasks if t._coro.cr_frame.f_locals.get('websocket') == user1] else user2
-                receiver = user2 if sender == user1 else user1
-
-                if message_text is None:
-                    user_disconnected[sender] = True
-                    continue
-
-                message = json.loads(message_text)
-                mtype = message.get("type")
-                if not mtype:
-                    print(f"[ERROR] Missing 'type': {message}")
-                    continue
-
-                if mtype == "endChat":
-                    # Cancel timer
-                    if conversation_id in chat_timers:
-                        chat_timers[conversation_id].cancel()
-                        del chat_timers[conversation_id]
-
-                    # Compute and store length
-                    end_time = datetime.now()
-                    start_time = conversation_start_times.get(conversation_id, end_time)
-                    delta = end_time - start_time
-                    minutes = int(delta.total_seconds() // 60)
-                    seconds = int(delta.total_seconds() % 60)
-                    length_str = f"{minutes}:{seconds:02d}"
-
-                    run_update(
-                        "UPDATE conversations SET conversation_length = %s WHERE conversation_id = %s",
-                        (length_str, conversation_id)
-                    )
-
-                    # Prompt surveys
-                    survey_prompt = json.dumps({
-                        "type": "survey",
-                        "conversation_id": conversation_id,
-                        "message": f"Conversation {conversation_id} has ended."
-                    })
-                    await asyncio.gather(
-                        *(user.send_text(survey_prompt) for user in [user1, user2] if not user_disconnected[user])
-                    )
-                    print("[INFO] Sent survey prompts.")
-
-                elif mtype == "survey":
-                    await handle_survey_submission(conversation_id, sender, message, survey_submitted)
-
-                elif mtype in ("typing", "stopTyping"):
-                    if not user_disconnected[receiver]:
-                        status = "typing" if mtype == "typing" else "stopped"
-                        await receiver.send_text(json.dumps({"type": "typing", "status": status}))
-
-                elif mtype == "message" and "text" in message:
-                    if not user_disconnected[receiver]:
-                        await handle_message(conversation_id, sender, receiver, message)
-
-                else:
-                    print(f"[WARNING] Unhandled type: {message}")
-
-            for t in pending:
-                t.cancel()
-
+    except Exception as e:
+        print(f"[ERROR] Exception in start_chat: {e}")
     finally:
+        if conn:
+            conn.close()
         chat_sessions.pop(conversation_id, None)
-        # Notify and close
-        for user in (user1, user2):
+
+        # Let users know if the other person disconnected
+        for user in [user1, user2]:
             if not survey_submitted[user] and not user_disconnected[user]:
                 try:
                     await user.send_text(json.dumps({
                         "type": "info",
-                        "message": "Your partner disconnected. Please complete your survey."
+                        "message": "Your partner disconnected. Please complete your survey before closing."
                     }))
                 except:
                     pass
+
         if all(survey_submitted.values()) or all(user_disconnected.values()):
-            await asyncio.gather(*(safe_close(u) for u in (user1, user2) if not user_disconnected[u]))
+            print(f"[INFO] Final cleanup for conversation {conversation_id}")
+            await asyncio.gather(
+                *(safe_close(user) for user in [user1, user2] if not user_disconnected[user])
+            )
 
-async def handle_survey_submission(conversation_id, sender, message, survey_submitted):
+async def handle_survey_submission(conn, conversation_id, sender, message, survey_submitted):
+    """Handle survey submission and database updates."""
     try:
+        # First determine which user (1 or 2) the sender is for this conversation
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT user1_id, user2_id
+                FROM conversations
+                WHERE conversation_id = %s
+            """, (conversation_id,))
+            result = cursor.fetchone()
+            if not result:
+                print(f"[ERROR] Could not find conversation {conversation_id}")
+                return
+            user1_id, user2_id = result
+            
+        # Determine if sender is user1 or user2
         sender_uuid = websocket_to_uuid.get(sender)
-        # Fetch existing survey fields
-        conn = get_db_connection()
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT user1_id, user2_id, user1_postsurvey, user2_postsurvey
-                    FROM conversations WHERE conversation_id = %s
-                    """, (conversation_id,)
-                )
-                row = cur.fetchone()
-        finally:
-            conn.close()
-
-        if not row:
-            print(f"[ERROR] Conversation {conversation_id} not found.")
-            return
-
-        user1_id, user2_id, u1_resp, u2_resp = row
-        is_user1 = (sender_uuid == user1_id)
-        # Prevent overwriting
-        if is_user1:
-            if u1_resp is not None:
-                print(f"[WARNING] User1 already submitted survey for {conversation_id}.")
-                return
+        is_user1 = sender_uuid == user1_id
+        
+        # Now check existing survey submissions
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT user1_postsurvey, user2_postsurvey
+                FROM conversations
+                WHERE conversation_id = %s
+            """, (conversation_id,))
+            result = cursor.fetchone()
+            user1_postsurvey, user2_postsurvey = result if result else (None, None)
+        
+        # Determine which column to update
+        if is_user1 and not user1_postsurvey:
             column = "user1_postsurvey"
-        else:
-            if u2_resp is not None:
-                print(f"[WARNING] User2 already submitted survey for {conversation_id}.")
-                return
+        elif not is_user1 and not user2_postsurvey:
             column = "user2_postsurvey"
-
-        # Save survey
-        run_update(
-            f"UPDATE conversations SET {column} = %s WHERE conversation_id = %s",
-            (Json(message), conversation_id)
-        )
+        else:
+            print(f"[WARNING] Survey already submitted for this user in conversation {conversation_id}.")
+            return
+            
+        with conn.cursor() as cursor:
+            cursor.execute(f"""
+                UPDATE conversations
+                SET {column} = %s
+                WHERE conversation_id = %s
+            """, (Json(message), conversation_id))
+            conn.commit()
+        print(f"[INFO] Stored survey for user {sender_uuid} in conversation {conversation_id}.")
+        
+        # Update the survey_submitted dictionary
         survey_submitted[sender] = True
-
+        
+        # Send individual completion message to the sender
         await sender.send_text(json.dumps({
             "type": "surveyCompleted",
-            "message": "Your survey has been submitted successfully."
+            "message": "Your survey has been submitted successfully. You will be redirected shortly."
         }))
-        print(f"[INFO] Survey stored for {sender_uuid} in {conversation_id}.")
-
+        
+        # Log the current state of survey submissions
+        print(f"[INFO] Survey submission state - User1: {survey_submitted.get(sender, False)}, User2: {survey_submitted.get(sender, False)}")
+        
     except Exception as e:
-        print(f"[ERROR] handle_survey_submission failed: {e}")
+        print(f"[ERROR] Failed to store survey: {e}")
+        # Don't mark as submitted if there was an error
+        survey_submitted[sender] = False
 
-async def handle_message(conversation_id, sender, receiver, message):
-    translated = await translate_message(
-        message["text"], user_languages[sender], user_languages[receiver]
+async def handle_message(conn, conversation_id, sender, receiver, message):
+    """Handle message translation and storage."""
+    translated_message = await translate_message(
+        message["text"],
+        user_languages[sender],
+        user_languages[receiver]
     )
-    await receiver.send_text(json.dumps({"type": "message", "text": translated}))
-
-    run_update(
-        "UPDATE conversations SET conversation_history = conversation_history || %s WHERE conversation_id = %s",
-        (Json([{
-            "sender": websocket_to_uuid.get(sender),
-            "text": message["text"],
-            "translation": translated
-        }]), conversation_id)
-    )
-
+    await receiver.send_text(json.dumps({
+        "type": "message",
+        "text": translated_message
+    }))
+    
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            UPDATE conversations
+            SET conversation_history = conversation_history || %s
+            WHERE conversation_id = %s
+        """, (
+            Json([{
+                "sender": websocket_to_uuid.get(sender),
+                "text": message["text"],
+                "translation": translated_message
+            }]),
+            conversation_id,
+        ))
+        conn.commit()
 
 # -------------------- Endpoints --------------------
 
