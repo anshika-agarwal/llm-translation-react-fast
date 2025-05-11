@@ -191,7 +191,7 @@ async def translate_message(message: str, source_language: str, target_language:
 async def chat_timer_task(user1: WebSocket, user2: WebSocket, conversation_id):
     """Send timer updates to both users; on expiry, send an 'expired' message."""
     try:
-        total_time = 180  # Total chat duration in seconds
+        total_time = 600  # Total chat duration in seconds
         print(f"[INFO] Timer started for conversation {conversation_id}.")
         for remaining_time in range(total_time, 0, -1):
             time_message = json.dumps({"type": "timer", "remaining_time": remaining_time})

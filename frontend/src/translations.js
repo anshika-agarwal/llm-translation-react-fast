@@ -3,7 +3,7 @@ const translations = {
     /* ───────── Header ───────── */
     title: "Welcome to Chat Room!",
     researchStudyInfo:
-      "You are invited to participate in a research study on interpersonal communication. You will be asked to chat anonymously with another user for 3 minutes and answer survey questions about your chat experience. You will be asked to chat about the following prompt: If you could change anything about the way you were raised, what would it be?",
+      "You are invited to participate in a research study on interpersonal communication. You will be asked to chat anonymously with another user for 20 minutes and answer survey questions about your chat experience. You will be asked to chat about the following prompt: If you could change anything about the way you were raised, what would it be?",
 
     /* ───────── System Messages ───────── */
     thankYouMessage:
@@ -140,7 +140,7 @@ const translations = {
     /* Header */
     title: "¡Bienvenido al Chat Room!",
     researchStudyInfo:
-      "Estás invitado a participar en un estudio de investigación sobre comunicación interpersonal. Se te pedirá que chatees de forma anónima con otro usuario durante 3 minutos y respondas preguntas sobre tu experiencia. Se te pedirá que hables sobre el siguiente tema: Si pudieras cambiar algo sobre la forma en que te criaron, ¿qué sería?",
+      "Estás invitado a participar en un estudio de investigación sobre comunicación interpersonal. Se te pedirá que chatees de forma anónima con otro usuario durante 20 minutos y respondas preguntas sobre tu experiencia. Se te pedirá que hables sobre el siguiente tema: Si pudieras cambiar algo sobre la forma en que te criaron, ¿qué sería?",
 
     /* System Messages */
     thankYouMessage:
