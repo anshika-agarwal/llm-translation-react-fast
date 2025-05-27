@@ -191,7 +191,7 @@ async def translate_message(message: str, source_language: str, target_language:
 async def chat_timer_task(user1: WebSocket, user2: WebSocket, conversation_id):
     """Send timer updates to both users; on expiry, send an 'expired' message."""
     try:
-        total_time = 600  # Total chat duration in seconds
+        total_time = 180  # Total chat duration in seconds
         print(f"[INFO] Timer started for conversation {conversation_id}.")
         for remaining_time in range(total_time, 0, -1):
             time_message = json.dumps({"type": "timer", "remaining_time": remaining_time})
@@ -264,7 +264,7 @@ def find_best_match(websocket: WebSocket, language: str) -> Optional[WebSocket]:
     
     # Only try to find priority matches (different languages)
     for waiting_ws, waiting_lang, join_time in waiting_room:
-        if waiting_ws != websocket and (language, waiting_lang) in CONTROL_PAIRS:
+        if waiting_ws != websocket and (language, waiting_lang) in PRIORITY_PAIRS:
             # Remove the matched pair from waiting room immediately
             waiting_room[:] = [(w, l, t) for w, l, t in waiting_room 
                              if w not in (websocket, waiting_ws)]
@@ -299,7 +299,7 @@ async def pair_users():
     # Try to pair remaining participants
     for i, (ws1, lang1, _) in enumerate(waiting_room):
         for j, (ws2, lang2, _) in enumerate(waiting_room[i+1:], i+1):
-            if (lang1, lang2) in CONTROL_PAIRS:
+            if (lang1, lang2) in PRIORITY_PAIRS:
                 # Set up the pair
                 active_users[ws1] = ws2
                 active_users[ws2] = ws1
